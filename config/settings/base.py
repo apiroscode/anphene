@@ -67,7 +67,10 @@ THIRD_PARTY_APPS = []
 
 LOCAL_APPS = [
     "anphene.regions.apps.RegionConfig",
+    "anphene.site.apps.SiteConfig",
     "anphene.users.apps.UsersConfig",
+    # NEED TO PLACE ON BOTTOM INSTALLED_APPS
+    "django_cleanup.apps.CleanupConfig",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -80,16 +83,9 @@ MIGRATION_MODULES = {"sites": "anphene.contrib.sites.migrations"}
 # AUTHENTICATION
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
-]
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "users:redirect"
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = "account_login"
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -103,7 +99,6 @@ PASSWORD_HASHERS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -114,8 +109,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -171,17 +168,11 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "anphene.utils.context_processors.settings_context",
+                "anphene.site.context_processors.site",
             ],
         },
     }
 ]
-
-# https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
-FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
-
-# http://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
-CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 # FIXTURES
 # ------------------------------------------------------------------------------
@@ -193,7 +184,7 @@ FIXTURE_DIRS = (str(APPS_DIR / "fixtures"),)
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-httponly
 SESSION_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-httponly
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-browser-xss-filter
 SECURE_BROWSER_XSS_FILTER = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
@@ -255,22 +246,49 @@ CELERY_TASK_TIME_LIMIT = 5 * 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-soft-time-limit
 # TODO: set to whatever value is adequate in your circumstances
 CELERY_TASK_SOFT_TIME_LIMIT = 60
-# http://docs.celeryproject.org/en/latest/userguide/configuration.html#beat-scheduler
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-# django-allauth
-# ------------------------------------------------------------------------------
-ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_AUTHENTICATION_METHOD = "username"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_REQUIRED = True
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = "anphene.users.adapters.AccountAdapter"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-SOCIALACCOUNT_ADAPTER = "anphene.users.adapters.SocialAccountAdapter"
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#beat-schedule
+CELERY_BEAT_SCHEDULE = {}
 
+# GRAPHENE
+# ------------------------------------------------------------------------------
+GRAPHENE = {
+    "RELAY_CONNECTION_ENFORCE_FIRST_OR_LAST": True,
+    "RELAY_CONNECTION_MAX_LIMIT": 100,
+}
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+APP_NAME = env("APP_NAME", default="")
+
+VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
+    "products": [
+        ("product_gallery", "thumbnail__540x540"),
+        ("product_gallery_2x", "thumbnail__1080x1080"),
+        ("product_small", "thumbnail__60x60"),
+        ("product_small_2x", "thumbnail__120x120"),
+        ("product_list", "thumbnail__255x255"),
+        ("product_list_2x", "thumbnail__510x510"),
+    ],
+    "background_images": [("header_image", "thumbnail__1080x440")],
+}
+
+VERSATILEIMAGEFIELD_SETTINGS = {
+    # Images should be pre-generated on Production environment
+    "create_images_on_demand": DEBUG
+}
+
+PLACEHOLDER_IMAGES = {
+    60: "images/placeholder60x60.png",
+    120: "images/placeholder120x120.png",
+    255: "images/placeholder255x255.png",
+    540: "images/placeholder540x540.png",
+    1080: "images/placeholder1080x1080.png",
+}
+DEFAULT_PLACEHOLDER = "images/placeholder255x255.png"
+
+CORS_ALLOW_METHODS = [
+    "OPTIONS",
+    "POST",
+]
+
+ENABLE_SSL = env.bool("ENABLE_SSL", default=False)

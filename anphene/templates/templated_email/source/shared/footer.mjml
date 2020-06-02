@@ -1,0 +1,23 @@
+<mj-section>
+  <mj-column>
+    <mj-text>
+        Ini adalah email yang dibuat secara otomatis, tolong jangan balas.
+    </mj-text>
+  </mj-column>
+</mj-section>
+<mj-section background-color="#F2F2F2">
+  <mj-column>
+    <mj-text align="center">
+        Hormat kami, {{ site_name }}
+    </mj-text>
+  </mj-column>
+</mj-section>
+<mj-section css-class="no-display">
+  <mj-column>
+    <mj-text>
+      {% if schema_markup %}
+        <script type="application/ld+json">{{ schema_markup|safe }}</script>
+      {% endif %}
+    </mj-text>
+  </mj-column>
+</mj-section>

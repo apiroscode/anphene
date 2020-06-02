@@ -1,0 +1,15 @@
+{
+  "name": "anphene",
+  "version": "0.0.1",
+  "description": "Anphene Graphql API",
+  "author": "Darwin H.C",
+  "dependencies": {},
+  "devDependencies": {
+    "mjml": "^4.6.2"
+  },
+  "scripts": {
+    "build-schema": "python manage.py get_graphql_schema > saleor/graphql/schema.graphql",
+    "heroku-postbuild": "npm run build-emails",
+    "build-emails": "mjml --config.beautify false -l skip \"anphene/templates/templated_email/source/*.mjml\" -o anphene/templates/templated_email/compiled"
+  }
+}

@@ -1,18 +1,20 @@
 # Core
 # ------------------------------------------------------------------------------
-pytz==2020.1  # https://github.com/stub42/pytz
-python-slugify==4.0.0  # https://github.com/un33k/python-slugify
-Pillow==7.1.2  # https://github.com/python-pillow/Pillow
 argon2-cffi==19.2.0  # https://github.com/hynek/argon2_cffi
-redis==3.5.0  # https://github.com/andymccurdy/redis-py
-hiredis==1.0.1  # https://github.com/redis/hiredis-py
 celery==4.4.2  # pyup: < 5.0  # https://github.com/celery/celery
 flower==0.9.4  # https://github.com/mher/flower
+hiredis==1.0.1  # https://github.com/redis/hiredis-py
+Pillow==7.1.2  # https://github.com/python-pillow/Pillow
+python-slugify==4.0.0  # https://github.com/un33k/python-slugify
+pytz==2020.1  # https://github.com/stub42/pytz
+redis==3.5.0  # https://github.com/andymccurdy/redis-py
 uvicorn==0.11.5  # https://github.com/encode/uvicorn
+whitenoise==5.0.1  # https://github.com/evansd/whitenoise
 
 # Django
 # ------------------------------------------------------------------------------
 django==3.0.6
+django-cleanup==4.0.0
 django-cors-headers==3.2.1
 django-environ==0.4.5
 django-extensions==2.2.9
