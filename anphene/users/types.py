@@ -1,4 +1,5 @@
 import graphene
+import graphene_django_optimizer as gql_optimizer
 from django.contrib.auth import models as auth_models
 from graphene import relay
 
@@ -97,6 +98,7 @@ class User(CountableDjangoObjectType):
         return resolve_permissions(root)
 
     @staticmethod
+    @gql_optimizer.resolver_hints(prefetch_related="groups")
     def resolve_permission_groups(root: models.User, _info, **_kwargs):
         return root.groups.all()
 
@@ -120,6 +122,7 @@ class Group(CountableDjangoObjectType):
 
     @staticmethod
     @permission_required(UserPermissions.MANAGE_STAFF)
+    @gql_optimizer.resolver_hints(prefetch_related="user_set")
     def resolve_users(root: auth_models.Group, _info):
         return root.user_set.all()
 

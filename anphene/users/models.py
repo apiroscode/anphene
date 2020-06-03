@@ -122,7 +122,7 @@ class User(AbstractUser):
 
     # Based
     email = CIEmailField(unique=True)
-    note = models.TextField(null=True, blank=True)
+    note = models.TextField(blank=True)
     USERNAME_FIELD = "email"
     objects = UserManager()
 

@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
 
-class RegionsConfig(AppConfig):
-    name = "anphene.regions"
+class ProductsConfig(AppConfig):
+    name = "anphene.products"
 
     def ready(self):
         # noinspection PyUnresolvedReferences

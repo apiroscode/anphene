@@ -39,7 +39,7 @@ class CountableConnection(NonNullConnection):
     class Meta:
         abstract = True
 
-    total_count = graphene.Int(description="A total count of items in the collection.")
+    total_count = graphene.Int(description="A total count of items in the collections.")
 
     @staticmethod
     def resolve_total_count(root, *_args, **_kwargs):

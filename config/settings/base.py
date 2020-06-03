@@ -66,7 +66,12 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = []
 
 LOCAL_APPS = [
-    "anphene.regions.apps.RegionConfig",
+    "anphene.attributes.apps.AttributesConfig",
+    "anphene.categories.apps.CategoriesConfig",
+    "anphene.collections.apps.CollectionsConfig",
+    "anphene.products.apps.ProductsConfig",
+    "anphene.regions.apps.RegionsConfig",
+    "anphene.suppliers.apps.SuppliersConfig",
     "anphene.site.apps.SiteConfig",
     "anphene.users.apps.UsersConfig",
     # NEED TO PLACE ON BOTTOM INSTALLED_APPS

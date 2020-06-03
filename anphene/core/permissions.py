@@ -9,20 +9,50 @@ class BasePermissionEnum(Enum):
         return self.value.split(".")[1]
 
 
-class UserPermissions(BasePermissionEnum):
-    MANAGE_CUSTOMERS = "users.manage_customers"
-    MANAGE_STAFF = "users.manage_staff"
+class AttributePermissions(BasePermissionEnum):
+    MANAGE_ATTRIBUTES = "attributes.manage_attributes"
+
+
+class CategoryPermissions(BasePermissionEnum):
+    MANAGE_CATEGORIES = "categories.manage_categories"
+
+
+class CollectionPermissions(BasePermissionEnum):
+    MANAGE_COLLECTIONS = "collections.manage_collections"
 
 
 class GroupPermissions(BasePermissionEnum):
     MANAGE_GROUPS = "users.manage_groups"
 
 
+class ProductPermission(BasePermissionEnum):
+    MANAGE_PRODUCTS = "products.manage_products"
+    MANAGE_PRODUCT_TYPES = "products.manage_product_types"
+
+
 class SitePermissions(BasePermissionEnum):
     MANAGE_SETTINGS = "site.manage_settings"
 
 
-PERMISSIONS_ENUMS = [UserPermissions, GroupPermissions, SitePermissions]
+class SupplierPermissions(BasePermissionEnum):
+    MANAGE_SUPPLIERS = "suppliers.manage_suppliers"
+
+
+class UserPermissions(BasePermissionEnum):
+    MANAGE_CUSTOMERS = "users.manage_customers"
+    MANAGE_STAFF = "users.manage_staff"
+
+
+PERMISSIONS_ENUMS = [
+    AttributePermissions,
+    CategoryPermissions,
+    CollectionPermissions,
+    GroupPermissions,
+    ProductPermission,
+    SitePermissions,
+    SupplierPermissions,
+    UserPermissions,
+]
 
 
 def split_permission_codename(permissions):
