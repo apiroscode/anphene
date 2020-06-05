@@ -5,7 +5,7 @@ from versatileimagefield.fields import PPOIField, VersatileImageField
 from core.db.fields import SanitizedJSONField
 from core.db.models import PublishableModel, SeoModel, SortableModel
 from core.utils.images import UploadToPathAndRename
-from ..core.permissions import ProductPermission
+from ..core.permissions import ProductPermissions
 
 
 class ProductType(models.Model):
@@ -15,7 +15,7 @@ class ProductType(models.Model):
 
     class Meta:
         ordering = ("name",)
-        permissions = ((ProductPermission.MANAGE_PRODUCT_TYPES, "Manage product types"),)
+        permissions = ((ProductPermissions.MANAGE_PRODUCT_TYPES.codename, "Manage product types"),)
 
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class Product(SeoModel, PublishableModel):
 
     class Meta:
         ordering = ("name",)
-        permissions = ((ProductPermission.MANAGE_PRODUCTS.codename, "Manage products"),)
+        permissions = ((ProductPermissions.MANAGE_PRODUCTS.codename, "Manage products"),)
 
 
 class ProductVariant(models.Model):

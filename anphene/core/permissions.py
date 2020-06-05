@@ -25,7 +25,7 @@ class GroupPermissions(BasePermissionEnum):
     MANAGE_GROUPS = "users.manage_groups"
 
 
-class ProductPermission(BasePermissionEnum):
+class ProductPermissions(BasePermissionEnum):
     MANAGE_PRODUCTS = "products.manage_products"
     MANAGE_PRODUCT_TYPES = "products.manage_product_types"
 
@@ -48,7 +48,7 @@ PERMISSIONS_ENUMS = [
     CategoryPermissions,
     CollectionPermissions,
     GroupPermissions,
-    ProductPermission,
+    ProductPermissions,
     SitePermissions,
     SupplierPermissions,
     UserPermissions,

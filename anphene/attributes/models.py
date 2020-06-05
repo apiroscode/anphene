@@ -3,6 +3,7 @@ from django.db import models
 from core.db.models import SortableModel
 from . import AttributeInputType
 from ..core.permissions import AttributePermissions
+from .managers import AttributeQuerySet
 
 
 class Attribute(models.Model):
@@ -36,6 +37,8 @@ class Attribute(models.Model):
 
     storefront_search_position = models.IntegerField(default=0, blank=True)
     available_in_grid = models.BooleanField(default=True, blank=True)
+
+    objects = AttributeQuerySet.as_manager()
 
     class Meta:
         ordering = ("storefront_search_position", "slug")

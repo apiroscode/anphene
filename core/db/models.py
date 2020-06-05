@@ -20,7 +20,7 @@ class PublishedQuerySet(models.QuerySet):
 
     @staticmethod
     def user_has_access_to_all(user):
-        return user.is_active and user.has_perm(permissions.ProductPermission.MANAGE_PRODUCTS)
+        return user.is_active and user.has_perm(permissions.ProductPermissions.MANAGE_PRODUCTS)
 
     def visible_to_user(self, user):
         if self.user_has_access_to_all(user):

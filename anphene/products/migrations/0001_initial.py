@@ -15,100 +15,200 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('categories', '0001_initial'),
-        ('suppliers', '0001_initial'),
+        ("categories", "0001_initial"),
+        ("suppliers", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Product',
+            name="Product",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('publication_date', models.DateField(blank=True, null=True)),
-                ('is_published', models.BooleanField(default=False)),
-                ('seo_title', models.CharField(blank=True, max_length=70, null=True, validators=[django.core.validators.MaxLengthValidator(70)])),
-                ('seo_description', models.CharField(blank=True, max_length=300, null=True, validators=[django.core.validators.MaxLengthValidator(300)])),
-                ('name', models.CharField(max_length=250)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('description', core.db.fields.SanitizedJSONField(blank=True, default=dict, sanitizer=draftjs_sanitizer.clean_draft_js)),
-                ('minimal_variant_price', models.PositiveIntegerField(default=0)),
-                ('updated_at', models.DateTimeField(auto_now=True, null=True)),
-                ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='products', to='categories.Category')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("publication_date", models.DateField(blank=True, null=True)),
+                ("is_published", models.BooleanField(default=False)),
+                (
+                    "seo_title",
+                    models.CharField(
+                        blank=True,
+                        max_length=70,
+                        null=True,
+                        validators=[django.core.validators.MaxLengthValidator(70)],
+                    ),
+                ),
+                (
+                    "seo_description",
+                    models.CharField(
+                        blank=True,
+                        max_length=300,
+                        null=True,
+                        validators=[django.core.validators.MaxLengthValidator(300)],
+                    ),
+                ),
+                ("name", models.CharField(max_length=250)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                (
+                    "description",
+                    core.db.fields.SanitizedJSONField(
+                        blank=True, default=dict, sanitizer=draftjs_sanitizer.clean_draft_js
+                    ),
+                ),
+                ("minimal_variant_price", models.PositiveIntegerField(default=0)),
+                ("updated_at", models.DateTimeField(auto_now=True, null=True)),
+                (
+                    "category",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="products",
+                        to="categories.Category",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('name',),
-                'permissions': (('manage_products', 'Manage products'),),
+                "ordering": ("name",),
+                "permissions": (("manage_products", "Manage products"),),
             },
         ),
         migrations.CreateModel(
-            name='ProductImage',
+            name="ProductImage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sort_order', models.IntegerField(db_index=True, editable=False, null=True)),
-                ('image', versatileimagefield.fields.VersatileImageField(upload_to=core.utils.images.UploadToPathAndRename(field='product.name', path='products'))),
-                ('ppoi', versatileimagefield.fields.PPOIField(default='0.5x0.5', editable=False, max_length=20)),
-                ('alt', models.CharField(blank=True, max_length=128)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='products.Product')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("sort_order", models.IntegerField(db_index=True, editable=False, null=True)),
+                (
+                    "image",
+                    versatileimagefield.fields.VersatileImageField(
+                        upload_to=core.utils.images.UploadToPathAndRename(
+                            field="product.name", path="products"
+                        )
+                    ),
+                ),
+                (
+                    "ppoi",
+                    versatileimagefield.fields.PPOIField(
+                        default="0.5x0.5", editable=False, max_length=20
+                    ),
+                ),
+                ("alt", models.CharField(blank=True, max_length=128)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="images",
+                        to="products.Product",
+                    ),
+                ),
+            ],
+            options={"ordering": ("sort_order",),},
+        ),
+        migrations.CreateModel(
+            name="ProductType",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=250)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                ("has_variants", models.BooleanField(default=True)),
             ],
             options={
-                'ordering': ('sort_order',),
+                "ordering": ("name",),
+                "permissions": (("manage_product_types", "Manage product types"),),
             },
         ),
         migrations.CreateModel(
-            name='ProductType',
+            name="ProductVariant",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=250)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('has_variants', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("sku", models.CharField(max_length=255, unique=True)),
+                ("track_inventory", models.BooleanField(default=True)),
+                ("weight", models.PositiveIntegerField(default=0)),
+                ("cost", models.PositiveIntegerField(default=0)),
+                ("price", models.PositiveIntegerField(default=0)),
+                ("quantity", models.PositiveIntegerField(default=0)),
+                ("quantity_allocated", models.PositiveIntegerField(default=0)),
             ],
-            options={
-                'ordering': ('name',),
-                'permissions': ((anphene.core.permissions.ProductPermission['MANAGE_PRODUCT_TYPES'], 'Manage product types'),),
-            },
+            options={"ordering": ("sku",),},
         ),
         migrations.CreateModel(
-            name='ProductVariant',
+            name="VariantImage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sku', models.CharField(max_length=255, unique=True)),
-                ('track_inventory', models.BooleanField(default=True)),
-                ('weight', models.PositiveIntegerField(default=0)),
-                ('cost', models.PositiveIntegerField(default=0)),
-                ('price', models.PositiveIntegerField(default=0)),
-                ('quantity', models.PositiveIntegerField(default=0)),
-                ('quantity_allocated', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "image",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="variant_images",
+                        to="products.ProductImage",
+                    ),
+                ),
+                (
+                    "variant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="variant_images",
+                        to="products.ProductVariant",
+                    ),
+                ),
             ],
-            options={
-                'ordering': ('sku',),
-            },
-        ),
-        migrations.CreateModel(
-            name='VariantImage',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variant_images', to='products.ProductImage')),
-                ('variant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variant_images', to='products.ProductVariant')),
-            ],
         ),
         migrations.AddField(
-            model_name='productvariant',
-            name='images',
-            field=models.ManyToManyField(through='products.VariantImage', to='products.ProductImage'),
+            model_name="productvariant",
+            name="images",
+            field=models.ManyToManyField(
+                through="products.VariantImage", to="products.ProductImage"
+            ),
         ),
         migrations.AddField(
-            model_name='productvariant',
-            name='product',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variants', to='products.Product'),
+            model_name="productvariant",
+            name="product",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="variants",
+                to="products.Product",
+            ),
         ),
         migrations.AddField(
-            model_name='product',
-            name='product_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products', to='products.ProductType'),
+            model_name="product",
+            name="product_type",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="products",
+                to="products.ProductType",
+            ),
         ),
         migrations.AddField(
-            model_name='product',
-            name='supplier',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='products', to='suppliers.Supplier'),
+            model_name="product",
+            name="supplier",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="products",
+                to="suppliers.Supplier",
+            ),
         ),
     ]
