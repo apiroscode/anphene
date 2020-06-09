@@ -2,8 +2,8 @@ from django.db import models
 
 from core.db.models import SortableModel
 from . import AttributeInputType
-from ..core.permissions import AttributePermissions
 from .managers import AttributeQuerySet
+from ..core.permissions import AttributePermissions
 
 
 class Attribute(models.Model):

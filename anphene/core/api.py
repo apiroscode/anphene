@@ -1,15 +1,16 @@
 import graphene
 
-from ..attributes.schema import AttributeQueries, AttributeMutations
+from ..attributes.schema import AttributeMutations, AttributeQueries
+from ..products.schema import ProductMutations, ProductQueries
 from ..regions.schema import RegionQueries
 from ..users.schema import UserMutations, UserQueries
 
 
-class Query(AttributeQueries, RegionQueries, UserQueries):
+class Query(AttributeQueries, ProductQueries, RegionQueries, UserQueries):
     pass
 
 
-class Mutation(AttributeMutations, UserMutations):
+class Mutation(AttributeMutations, ProductMutations, UserMutations):
     pass
 
 

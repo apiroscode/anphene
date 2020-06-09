@@ -6,11 +6,11 @@ from core.db.fields import SanitizedJSONField
 from core.db.models import PublishableModel, SeoModel, SortableModel
 from core.utils.images import UploadToPathAndRename
 from ..core.permissions import ProductPermissions
+from django.contrib.postgres.fields import CICharField, JSONField
 
 
 class ProductType(models.Model):
-    name = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=255, unique=True)
+    name = CICharField(max_length=250, unique=True)
     has_variants = models.BooleanField(default=True)
 
     class Meta:
