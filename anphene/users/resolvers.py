@@ -27,7 +27,7 @@ def resolve_permissions(root: models.User):
     return format_permissions_for_display(permissions)
 
 
-def resolve_permission_groups(_info, **_kwargs):
+def resolve_groups(_info, **_kwargs):
     qs = auth_models.Group.objects.all()
     return qs
 

@@ -41,5 +41,4 @@ class ProductType(CountableDjangoObjectType):
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCT_TYPES)
     def resolve_available_attributes(root: models.ProductType, info, **kwargs):
-        qs = attributes_models.Attribute.objects.get_unassigned_attributes(root.pk)
-        return resolve_attributes(info, qs=qs, **kwargs)
+        return attributes_models.Attribute.objects.get_unassigned_attributes(root.pk)

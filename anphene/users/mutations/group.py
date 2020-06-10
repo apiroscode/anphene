@@ -1,10 +1,17 @@
 import graphene
 from django.contrib.auth import models as auth_models
 
-from anphene.core.permissions import get_permissions, GroupPermissions
+from anphene.core.permissions import get_permissions, GroupPermissions, UserPermissions
 from core.graph.enums import PermissionEnum
-from core.graph.mutations import ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
-from ..types import Group
+from core.graph.mutations import (
+    BaseMutation,
+    ModelBulkDeleteMutation,
+    ModelDeleteMutation,
+    ModelMutation,
+)
+from core.graph.utils import from_global_id_strict_type
+from ..types import Group, User
+from .. import models
 
 
 class GroupInput(graphene.InputObjectType):
@@ -67,3 +74,56 @@ class GroupBulkDelete(ModelBulkDeleteMutation):
         description = "Deletes groups."
         model = auth_models.Group
         permissions = (GroupPermissions.MANAGE_GROUPS,)
+
+
+class GroupStaffAssign(BaseMutation):
+    group = graphene.Field(Group, description="The updated group type.")
+
+    class Arguments:
+        group_id = graphene.ID(
+            required=True, description="Id of the group type to assign the staff into."
+        )
+        staff_ids = graphene.List(graphene.ID, required=True, description="Staff ids.")
+
+    class Meta:
+        description = "Assign staff to a given group type."
+
+    @classmethod
+    def check_permissions(cls, context):
+        return context.user.has_perm(UserPermissions.MANAGE_STAFF)
+
+    @classmethod
+    def save_field_values(cls, group, field, pks):
+        """Add in bulk the PKs to assign to a given product type."""
+        getattr(group, field).add(*pks)
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        group_id = data["group_id"]
+        staff_ids = data["staff_ids"]
+
+        # Retrieve the requested group
+        group = graphene.Node.get_node_from_global_id(info, group_id, only_type=Group)
+
+        # Resolve all the passed IDs to ints
+        raw_staff_pks = [
+            from_global_id_strict_type(staff_id, only_type=User, field="staff_id")
+            for staff_id in staff_ids
+        ]
+        staff_pks = (
+            models.User.objects.staff().filter(id__in=raw_staff_pks,).values_list("pk", flat=True)
+        )
+        # Commit
+        cls.save_field_values(group, "user_set", staff_pks)
+
+        return cls(group=group)
+
+
+class GroupStaffUnassign(GroupStaffAssign):
+    class Meta:
+        description = "Unassign staff to a given group type."
+
+    @classmethod
+    def save_field_values(cls, group, field, pks):
+        """Add in bulk the PKs to assign to a given product type."""
+        getattr(group, field).remove(*pks)

@@ -312,7 +312,7 @@ class AttributeUnassign(BaseMutation):
             required=True, description="ID of the product type to assign the attributes into.",
         )
         attribute_ids = graphene.List(
-            graphene.ID, required=True, description="The IDs of the attributes to assign.",
+            graphene.ID, required=True, description="The IDs of the attributes to unassign.",
         )
 
     class Meta:
@@ -334,7 +334,7 @@ class AttributeUnassign(BaseMutation):
         # Retrieve the requested product type
         product_type = graphene.Node.get_node_from_global_id(
             info, product_type_id, only_type=ProductType
-        )  # type: models.ProductType
+        )
 
         # Resolve all the passed IDs to ints
         attribute_pks = [

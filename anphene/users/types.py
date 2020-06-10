@@ -5,10 +5,12 @@ from graphene import relay
 
 from core.decorators import permission_required
 from core.graph.connection import CountableDjangoObjectType
+from core.graph.fields import FilterInputConnectionField
 from core.graph.types import Permission
 from core.graph.utils import from_global_id_strict_type
 from core.utils import format_permissions_for_display
 from . import models
+from .filters import StaffUserInput
 from ..core.permissions import UserPermissions
 from ..regions.dataloader import SubDistrictByIdLoader
 
@@ -65,9 +67,7 @@ class User(CountableDjangoObjectType):
     addresses = graphene.List(Address, description="List of all user's addresses.")
 
     user_permissions = graphene.List(UserPermission, description="List of user's permissions.")
-    permission_groups = graphene.List(
-        "anphene.users.types.Group", description="List of user's permission groups.",
-    )
+    groups = graphene.List("anphene.users.types.Group", description="List of user's groups.",)
 
     class Meta:
         description = "Represents user data."
@@ -99,7 +99,7 @@ class User(CountableDjangoObjectType):
 
     @staticmethod
     @gql_optimizer.resolver_hints(prefetch_related="groups")
-    def resolve_permission_groups(root: models.User, _info, **_kwargs):
+    def resolve_groups(root: models.User, _info, **_kwargs):
         return root.groups.all()
 
     @staticmethod
@@ -113,6 +113,7 @@ class User(CountableDjangoObjectType):
 class Group(CountableDjangoObjectType):
     users = graphene.List(User, description="List of group users")
     permissions = graphene.List(Permission, description="List of group permissions")
+    available_staff = FilterInputConnectionField(User, filter=StaffUserInput())
 
     class Meta:
         description = "Represents permission group data."
@@ -121,7 +122,6 @@ class Group(CountableDjangoObjectType):
         only_fields = ["name", "permissions", "id"]
 
     @staticmethod
-    @permission_required(UserPermissions.MANAGE_STAFF)
     @gql_optimizer.resolver_hints(prefetch_related="user_set")
     def resolve_users(root: auth_models.Group, _info):
         return root.user_set.all()
@@ -130,3 +130,9 @@ class Group(CountableDjangoObjectType):
     def resolve_permissions(root: auth_models.Group, _info):
         permissions = root.permissions.prefetch_related("content_type").order_by("codename")
         return format_permissions_for_display(permissions)
+
+    @staticmethod
+    def resolve_available_staff(root: auth_models.Group, info, **kwargs):
+        user = info.context.user
+        qs = models.User.objects.staff().exclude(id=user.id).exclude(groups=root)
+        return qs.distinct()

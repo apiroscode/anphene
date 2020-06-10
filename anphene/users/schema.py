@@ -3,9 +3,16 @@ import graphene
 from core.decorators import one_of_permissions_required, permission_required
 from core.graph.fields import FilterInputConnectionField
 from core.graph.types import Permission
-from .filters import CustomerFilterInput, PermissionGroupFilterInput, StaffUserInput
+from .filters import CustomerFilterInput, GroupFilterInput, StaffUserInput
 from .mutations.auth import Login, Logout, PasswordChange, RequestPasswordReset, SetPassword
-from .mutations.group import GroupBulkDelete, GroupCreate, GroupDelete, GroupUpdate
+from .mutations.group import (
+    GroupBulkDelete,
+    GroupCreate,
+    GroupDelete,
+    GroupUpdate,
+    GroupStaffAssign,
+    GroupStaffUnassign,
+)
 from .mutations.staff import (
     StaffBulkActivate,
     StaffBulkDeactivate,
@@ -18,11 +25,11 @@ from .resolvers import (
     resolve_address,
     resolve_all_permissions,
     resolve_customers,
-    resolve_permission_groups,
+    resolve_groups,
     resolve_staff_users,
     resolve_user,
 )
-from .sorters import PermissionGroupSortingInput, UserSortingInput
+from .sorters import GroupSortingInput, UserSortingInput
 from .types import Address, Group, User
 from ..core.permissions import GroupPermissions, UserPermissions
 
@@ -40,13 +47,13 @@ class UserQueries(graphene.ObjectType):
         description="List of the shop's customers.",
     )
     all_permissions = graphene.List(Permission, description="List of store permissions.")
-    permission_groups = FilterInputConnectionField(
+    groups = FilterInputConnectionField(
         Group,
-        filter=PermissionGroupFilterInput(description="Filtering options for permission groups."),
-        sort_by=PermissionGroupSortingInput(description="Sort permission groups."),
+        filter=GroupFilterInput(description="Filtering options for permission groups."),
+        sort_by=GroupSortingInput(description="Sort permission groups."),
         description="List of permission groups.",
     )
-    permission_group = graphene.Field(
+    group = graphene.Field(
         Group,
         id=graphene.Argument(graphene.ID, description="ID of the group.", required=True),
         description="Look up permission group by ID.",
@@ -76,11 +83,11 @@ class UserQueries(graphene.ObjectType):
         return resolve_all_permissions(info, **kwargs)
 
     @permission_required(GroupPermissions.MANAGE_GROUPS)
-    def resolve_permission_groups(self, info, **kwargs):
-        return resolve_permission_groups(info, **kwargs)
+    def resolve_groups(self, info, **kwargs):
+        return resolve_groups(info, **kwargs)
 
     @permission_required(GroupPermissions.MANAGE_GROUPS)
-    def resolve_permission_group(self, info, id):
+    def resolve_group(self, info, id):
         return graphene.Node.get_node_from_global_id(info, id, Group)
 
     def resolve_me(self, info):
@@ -109,6 +116,8 @@ class UserMutations(graphene.ObjectType):
     group_update = GroupUpdate.Field()
     group_delete = GroupDelete.Field()
     group_bulk_delete = GroupBulkDelete.Field()
+    group_staff_assign = GroupStaffAssign.Field()
+    group_staff_unassign = GroupStaffUnassign.Field()
 
     # Staff Mutations
     staff_create = StaffCreate.Field()

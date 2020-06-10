@@ -32,7 +32,7 @@ class CustomerFilter(django_filters.FilterSet):
         ]
 
 
-class PermissionGroupFilter(django_filters.FilterSet):
+class GroupFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method=filter_fields_containing_value("name"))
 
 
@@ -55,9 +55,9 @@ class CustomerFilterInput(FilterInputObjectType):
         filterset_class = CustomerFilter
 
 
-class PermissionGroupFilterInput(FilterInputObjectType):
+class GroupFilterInput(FilterInputObjectType):
     class Meta:
-        filterset_class = PermissionGroupFilter
+        filterset_class = GroupFilter
 
 
 class StaffUserInput(FilterInputObjectType):
