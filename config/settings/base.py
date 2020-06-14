@@ -63,7 +63,9 @@ DJANGO_APPS = [
     "django.contrib.admin",
     "django.forms",
 ]
-THIRD_PARTY_APPS = []
+THIRD_PARTY_APPS = [
+    "versatileimagefield",
+]
 
 LOCAL_APPS = [
     "anphene.attributes.apps.AttributesConfig",

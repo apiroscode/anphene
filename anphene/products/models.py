@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import CICharField
 from django.db import models
 from draftjs_sanitizer import clean_draft_js
 from versatileimagefield.fields import PPOIField, VersatileImageField
@@ -6,7 +7,6 @@ from core.db.fields import SanitizedJSONField
 from core.db.models import PublishableModel, SeoModel, SortableModel
 from core.utils.images import UploadToPathAndRename
 from ..core.permissions import ProductPermissions
-from django.contrib.postgres.fields import CICharField, JSONField
 
 
 class ProductType(models.Model):

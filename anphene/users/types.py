@@ -3,7 +3,6 @@ import graphene_django_optimizer as gql_optimizer
 from django.contrib.auth import models as auth_models
 from graphene import relay
 
-from core.decorators import permission_required
 from core.graph.connection import CountableDjangoObjectType
 from core.graph.fields import FilterInputConnectionField
 from core.graph.types import Permission
@@ -11,7 +10,6 @@ from core.graph.utils import from_global_id_strict_type
 from core.utils import format_permissions_for_display
 from . import models
 from .filters import StaffUserInput
-from ..core.permissions import UserPermissions
 from ..regions.dataloader import SubDistrictByIdLoader
 
 

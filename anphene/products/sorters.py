@@ -13,7 +13,7 @@ class ProductTypeSortField(graphene.Enum):
         # pylint: disable=no-member
         descriptions = {ProductTypeSortField.NAME.name: "name"}
         if self.name in descriptions:
-            return f"Sort products by {descriptions[self.name]}."
+            return f"Sort products type by {descriptions[self.name]}."
         raise ValueError("Unsupported enum value: %s" % self.value)
 
 

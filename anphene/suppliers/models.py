@@ -1,5 +1,6 @@
 from django.contrib.postgres.fields import CICharField
 from django.db import models
+
 from ..core.permissions import SupplierPermissions
 from ..users.models import PossiblePhoneNumberField
 

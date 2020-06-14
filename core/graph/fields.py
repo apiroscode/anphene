@@ -72,11 +72,18 @@ class PrefetchingConnectionField(BaseDjangoConnectionField):
 
 class FilterInputConnectionField(PrefetchingConnectionField):
     def __init__(self, *args, **kwargs):
+        # FILTER
         self.filter_field_name = kwargs.pop("filter_field_name", "filter")
         self.filter_input = kwargs.get(self.filter_field_name)
         self.filterset_class = None
         if self.filter_input:
             self.filterset_class = self.filter_input.filterset_class
+
+        # SORTER
+        sort_by = kwargs.get("sort_by")
+        self.sort_enum = None
+        if sort_by:
+            self.sort_enum = sort_by._meta.sort_enum
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -90,6 +97,7 @@ class FilterInputConnectionField(PrefetchingConnectionField):
         enforce_first_or_last,
         filterset_class,
         filters_name,
+        sort_enum,
         root,
         info,
         **args,
@@ -131,9 +139,11 @@ class FilterInputConnectionField(PrefetchingConnectionField):
 
         # gql_optimizer query
         iterable = gql_optimizer.query(iterable, info)
-
         if sort_by:
             try:
+                custom_sort_by = getattr(sort_enum, f"qs_with_{sort_by['field']}", None)
+                if custom_sort_by:
+                    iterable = custom_sort_by(iterable)
                 iterable = iterable.order_by(f"{sort_by['direction']}{sort_by['field']}")
             except FieldError:
                 raise GraphQLError("Received sorter is invalid.")
@@ -160,5 +170,8 @@ class FilterInputConnectionField(PrefetchingConnectionField):
 
     def get_resolver(self, parent_resolver):
         return partial(
-            super().get_resolver(parent_resolver), self.filterset_class, self.filter_field_name,
+            super().get_resolver(parent_resolver),
+            self.filterset_class,
+            self.filter_field_name,
+            self.sort_enum,
         )

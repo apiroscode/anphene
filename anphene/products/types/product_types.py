@@ -7,7 +7,6 @@ from core.graph.fields import FilterInputConnectionField
 from .. import models
 from ...attributes import models as attributes_models
 from ...attributes.filters import AttributeFilterInput
-from ...attributes.resolvers import resolve_attributes
 from ...attributes.types import Attribute
 from ...core.permissions import ProductPermissions
 

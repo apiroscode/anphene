@@ -3,12 +3,13 @@ import os
 import re
 import warnings
 from functools import reduce
-
+from uuid import uuid4
 from django import template
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.templatetags.static import static
 from django.utils.deconstruct import deconstructible
+from versatileimagefield.image_warmer import VersatileImageFieldWarmer
 
 logger = logging.getLogger(__name__)
 register = template.Library()
@@ -107,26 +108,46 @@ def get_product_image_thumbnail(instance, size, method):
     return get_thumbnail(image_file, size, method)
 
 
+def create_thumbnails(pk, model, size_set, image_attr=None):
+    instance = model.objects.get(pk=pk)
+    if not image_attr:
+        image_attr = "image"
+    image_instance = getattr(instance, image_attr)
+    if image_instance.name == "":
+        # There is no file, skip processing
+        return
+    warmer = VersatileImageFieldWarmer(
+        instance_or_queryset=instance, rendition_key_set=size_set, image_attr=image_attr
+    )
+    logger.info("Creating thumbnails for  %s", pk)
+    num_created, failed_to_create = warmer.warm()
+    if num_created:
+        logger.info("Created %d thumbnails", num_created)
+    if failed_to_create:
+        logger.error("Failed to generate thumbnails", extra={"paths": failed_to_create})
+
+
 @deconstructible
 class UploadToPathAndRename(object):
     """
-    Upload to path and rename for image field use in django model
-    """
+        Upload to path and rename for image field use in django model
+        """
 
-    def __init__(self, path, field):
+    def __init__(self, path, field=False):
         self.path = path
         self.field = field
 
     def __call__(self, instance, filename):
+        # get value from field and remove all symbols and whitespace
+        name = ""
+        if self.field:
+            name = reduce(getattr, self.field.split("."), instance)
+            name = re.sub(r"[^\w]", "", str(name))
+
         ext = filename.split(".")[-1]
 
-        # get value from field and remove all symbols and whitespace
-        name = reduce(getattr, self.field.split("."), instance)
-        name = re.sub(r"[^\w]", "", str(name))
-
-        filename = f"{name}.{ext}"
+        filename = f"{uuid4().hex[:8]}_{name}.{ext}"
         filename = "".join(filename.split())
-
         return os.path.join(self.path, filename)
 
 

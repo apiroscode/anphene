@@ -6,4 +6,4 @@ class SiteConfig(AppConfig):
 
     def ready(self):
         # noinspection PyUnresolvedReferences
-        pass
+        from . import signals

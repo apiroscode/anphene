@@ -12,6 +12,14 @@ ERROR_COULD_NO_RESOLVE_GLOBAL_ID = "Could not resolve to a node with the global 
 registry = get_global_registry()
 
 
+def clean_seo_fields(data):
+    """Extract and assign seo fields to given dictionary."""
+    seo_fields = data.pop("seo", None)
+    if seo_fields:
+        data["seo_title"] = seo_fields.get("title")
+        data["seo_description"] = seo_fields.get("description")
+
+
 def str_to_enum(name):
     """Create an enum value from a string."""
     return name.replace(" ", "_").replace("-", "_").upper()
@@ -125,3 +133,15 @@ def get_nodes(ids, graphene_type: Union[graphene.ObjectType, str] = None, model=
             graphene_type, pk
         )
     return nodes
+
+
+def get_node_or_slug(info, id, type):
+    result = graphene.Node.get_node_from_global_id(info, id, type)
+    if result is None:
+        model = type._meta.model
+        try:
+            return model.objects.get(slug=id)
+        except model.DoesNotExist:
+            return None
+    else:
+        return result

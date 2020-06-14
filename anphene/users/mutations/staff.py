@@ -9,6 +9,7 @@ from core.graph.mutations import (
     ModelMutation,
 )
 from core.graph.types import Upload
+from core.utils.images import validate_image_file
 from core.utils.urls import validate_storefront_url
 from .. import models
 from ..emails import send_set_password_email_with_url
@@ -68,6 +69,10 @@ class StaffCreate(ModelMutation):
             except ValidationError as error:
                 raise ValidationError({"redirect_url": error})
 
+        if data.get("id_card"):
+            image_data = info.context.FILES.get(data["id_card"])
+            validate_image_file(image_data, "id_card")
+
         # set is_staff to True to create a staff user
         cleaned_input["is_staff"] = True
 
@@ -93,14 +98,6 @@ class StaffUpdate(StaffCreate):
         exclude = ["password"]
         model = models.User
         permissions = (UserPermissions.MANAGE_STAFF,)
-
-    @classmethod
-    def clean_input(cls, info, instance, data):
-        cleaned_input = super().clean_input(info, instance, data)
-        id_card = cleaned_input.get("id_card")
-        if not id_card:
-            cleaned_input.pop("id_card", None)
-        return cleaned_input
 
 
 class StaffDelete(ModelDeleteMutation):

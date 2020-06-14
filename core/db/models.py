@@ -19,11 +19,11 @@ class PublishedQuerySet(models.QuerySet):
         )
 
     @staticmethod
-    def user_has_access_to_all(user):
-        return user.is_active and user.has_perm(permissions.ProductPermissions.MANAGE_PRODUCTS)
+    def user_has_access_to_all(user, perm):
+        return user.is_active and user.has_perm(perm)
 
-    def visible_to_user(self, user):
-        if self.user_has_access_to_all(user):
+    def visible_to_user(self, user, perm):
+        if self.user_has_access_to_all(user, perm):
             return self.all()
         return self.published()
 
@@ -45,11 +45,9 @@ class PublishableModel(models.Model):
 
 
 class SeoModel(models.Model):
-    seo_title = models.CharField(
-        max_length=70, blank=True, null=True, validators=[MaxLengthValidator(70)]
-    )
+    seo_title = models.CharField(max_length=70, blank=True, validators=[MaxLengthValidator(70)])
     seo_description = models.CharField(
-        max_length=300, blank=True, null=True, validators=[MaxLengthValidator(300)]
+        max_length=300, blank=True, validators=[MaxLengthValidator(300)]
     )
 
     class Meta:

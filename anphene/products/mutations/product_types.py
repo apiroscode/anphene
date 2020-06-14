@@ -11,7 +11,6 @@ from core.graph.mutations import (
 )
 from core.graph.utils import from_global_id_strict_type
 from core.graph.utils.reordering import perform_reordering
-from core.utils import validate_slug_and_generate_if_needed
 from .. import models
 from ..types.product_types import ProductType
 from ...attributes import AttributeInputType, models as attributes_models

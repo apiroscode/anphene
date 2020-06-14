@@ -6,14 +6,14 @@ from ..core.permissions import ProductPermissions
 
 class BaseAttributeQuerySet(models.QuerySet):
     @staticmethod
-    def user_has_access_to_all(user):
-        return user.is_active and user.has_perm(ProductPermissions.MANAGE_PRODUCTS)
+    def user_has_access_to_all(user, perm):
+        return user.is_active and user.has_perm(perm)
 
     def get_public_attributes(self):
         raise NotImplementedError
 
-    def get_visible_to_user(self, user):
-        if self.user_has_access_to_all(user):
+    def get_visible_to_user(self, user, perm):
+        if self.user_has_access_to_all(user, perm):
             return self.all()
         return self.get_public_attributes()
 

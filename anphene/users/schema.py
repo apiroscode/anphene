@@ -9,9 +9,9 @@ from .mutations.group import (
     GroupBulkDelete,
     GroupCreate,
     GroupDelete,
-    GroupUpdate,
     GroupStaffAssign,
     GroupStaffUnassign,
+    GroupUpdate,
 )
 from .mutations.staff import (
     StaffBulkActivate,

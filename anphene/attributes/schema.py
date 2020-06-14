@@ -15,8 +15,6 @@ from .mutations import (
 from .resolvers import resolve_attributes
 from .sorters import AttributeSortingInput
 from .types import Attribute
-from core.decorators import permission_required
-from core.exceptions import PermissionDenied
 
 
 class AttributeQueries(graphene.ObjectType):

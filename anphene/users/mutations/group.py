@@ -10,8 +10,8 @@ from core.graph.mutations import (
     ModelMutation,
 )
 from core.graph.utils import from_global_id_strict_type
-from ..types import Group, User
 from .. import models
+from ..types import Group, User
 
 
 class GroupInput(graphene.InputObjectType):

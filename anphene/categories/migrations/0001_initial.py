@@ -2,38 +2,73 @@
 
 import django.contrib.postgres.fields.jsonb
 import django.core.validators
-from django.db import migrations, models
 import django.db.models.deletion
 import versatileimagefield.fields
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('seo_title', models.CharField(blank=True, max_length=70, null=True, validators=[django.core.validators.MaxLengthValidator(70)])),
-                ('seo_description', models.CharField(blank=True, max_length=300, null=True, validators=[django.core.validators.MaxLengthValidator(300)])),
-                ('name', models.CharField(max_length=250)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('description_json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict)),
-                ('background', versatileimagefield.fields.VersatileImageField(blank=True, null=True, upload_to='category-backgrounds')),
-                ('background_alt', models.CharField(blank=True, max_length=128)),
-                ('lft', models.PositiveIntegerField(editable=False)),
-                ('rght', models.PositiveIntegerField(editable=False)),
-                ('tree_id', models.PositiveIntegerField(db_index=True, editable=False)),
-                ('level', models.PositiveIntegerField(editable=False)),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='children', to='categories.Category')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "seo_title",
+                    models.CharField(
+                        blank=True,
+                        max_length=70,
+                        null=True,
+                        validators=[django.core.validators.MaxLengthValidator(70)],
+                    ),
+                ),
+                (
+                    "seo_description",
+                    models.CharField(
+                        blank=True,
+                        max_length=300,
+                        null=True,
+                        validators=[django.core.validators.MaxLengthValidator(300)],
+                    ),
+                ),
+                ("name", models.CharField(max_length=250)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                (
+                    "description_json",
+                    django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict),
+                ),
+                (
+                    "background",
+                    versatileimagefield.fields.VersatileImageField(
+                        blank=True, null=True, upload_to="category-backgrounds"
+                    ),
+                ),
+                ("background_alt", models.CharField(blank=True, max_length=128)),
+                ("lft", models.PositiveIntegerField(editable=False)),
+                ("rght", models.PositiveIntegerField(editable=False)),
+                ("tree_id", models.PositiveIntegerField(db_index=True, editable=False)),
+                ("level", models.PositiveIntegerField(editable=False)),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="children",
+                        to="categories.Category",
+                    ),
+                ),
             ],
-            options={
-                'permissions': (('manage_categories', 'Manage categories'),),
-            },
+            options={"permissions": (("manage_categories", "Manage categories"),),},
         ),
     ]

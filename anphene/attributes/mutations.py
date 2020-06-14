@@ -18,7 +18,7 @@ from .types import Attribute, AttributeValue
 from ..core.permissions import AttributePermissions
 
 
-class AttributeValueCreateInput(graphene.InputObjectType):
+class AttributeValueInput(graphene.InputObjectType):
     name = graphene.String(
         required=True, description="Name of a value displayed in the interface."
     )
@@ -58,7 +58,7 @@ class AttributeCreateInput(AttributeInput):
     input_type = AttributeInputTypeEnum(
         description="The input type to use for entering attribute values in the dashboard."
     )
-    values = graphene.List(AttributeValueCreateInput, description="List of attribute's values.")
+    values = graphene.List(AttributeValueInput, description="List of attribute's values.")
 
 
 class ReorderInput(graphene.InputObjectType):
@@ -212,7 +212,7 @@ class AttributeValueCreate(ModelMutation):
             name="attribute",
             description="Attribute to which value will be assigned.",
         )
-        input = AttributeValueCreateInput(
+        input = AttributeValueInput(
             required=True, description="Fields required to create an AttributeValue."
         )
 
@@ -250,7 +250,7 @@ class AttributeValueUpdate(ModelMutation):
 
     class Arguments:
         id = graphene.ID(required=True, description="ID of an AttributeValue to update.")
-        input = AttributeValueCreateInput(
+        input = AttributeValueInput(
             required=True, description="Fields required to update an AttributeValue."
         )
 
