@@ -6,6 +6,7 @@ from core.graph.fields import PrefetchingConnectionField
 from core.graph.types import Image
 from . import models
 from ..products.types.products import Product
+from ..core.permissions import CollectionPermissions
 
 
 class Collection(CountableDjangoObjectType):
@@ -42,12 +43,16 @@ class Collection(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_products(root: models.Collection, info, first=None, **kwargs):
-        return root.products.collection_sorted(info.context.user)
+        return root.products.all()
+        # TODO: AFTER PRODUCT FINISH
+        # return root.products.collection_sorted(info.context.user)
 
     @classmethod
     def get_node(cls, info, id):
         if info.context:
             user = info.context.user
-            qs = cls._meta.model.objects.visible_to_user(user)
+            qs = cls._meta.model.objects.visible_to_user(
+                user, CollectionPermissions.MANAGE_COLLECTIONS
+            )
             return qs.filter(id=id).first()
         return None

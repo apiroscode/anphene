@@ -15,7 +15,6 @@ from .mutations.group import (
 )
 from .mutations.staff import (
     StaffBulkActivate,
-    StaffBulkDeactivate,
     StaffBulkDelete,
     StaffCreate,
     StaffDelete,
@@ -124,5 +123,4 @@ class UserMutations(graphene.ObjectType):
     staff_update = StaffUpdate.Field()
     staff_delete = StaffDelete.Field()
     staff_bulk_activate = StaffBulkActivate.Field()
-    staff_bulk_deactivate = StaffBulkDeactivate.Field()
     staff_bulk_delete = StaffBulkDelete.Field()
