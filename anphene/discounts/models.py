@@ -3,16 +3,16 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
-from . import DiscountValueType, VoucherType
+from . import DiscountType, VoucherType
 from .managers import SaleQueryset, VoucherQueryset
 from ..core.permissions import DiscountPermissions
 
 
 def get_discount(discount_type, value, price):
     after_discount = 0
-    if discount_type == DiscountValueType.FIXED:
+    if discount_type == DiscountType.FIXED:
         after_discount = price - value
-    elif discount_type == DiscountValueType.PERCENTAGE:
+    elif discount_type == DiscountType.PERCENTAGE:
         after_discount = price - (Decimal(value) / 100 * price)
 
     if after_discount <= 0:
@@ -52,12 +52,13 @@ class Voucher(models.Model):
     apply_once_per_customer = models.BooleanField(default=False)
 
     discount_type = models.CharField(
-        max_length=10, choices=DiscountValueType.CHOICES, default=DiscountValueType.FIXED
+        max_length=10, choices=DiscountType.CHOICES, default=DiscountType.FIXED
     )
     discount_value = models.PositiveIntegerField(default=0)
 
     min_spent_amount = models.PositiveIntegerField(null=True, blank=True)
     min_checkout_items_quantity = models.PositiveIntegerField(null=True, blank=True)
+
     products = models.ManyToManyField("products.Product", blank=True)
     collections = models.ManyToManyField("collections.Collection", blank=True)
     categories = models.ManyToManyField("categories.Category", blank=True)
@@ -85,8 +86,7 @@ class Voucher(models.Model):
     @property
     def is_free(self):
         return (
-            self.discount_value == Decimal(100)
-            and self.discount_type == DiscountValueType.PERCENTAGE
+            self.discount_value == Decimal(100) and self.discount_type == DiscountType.PERCENTAGE
         )
 
     def get_discount(self, price):
@@ -129,14 +129,16 @@ class VoucherCustomer(models.Model):
 class Sale(models.Model):
     name = models.CharField(max_length=255)
     type = models.CharField(
-        max_length=10, choices=DiscountValueType.CHOICES, default=DiscountValueType.FIXED,
+        max_length=10, choices=DiscountType.CHOICES, default=DiscountType.FIXED,
     )
     value = models.PositiveIntegerField(default=0)
+
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(null=True, blank=True)
+
     products = models.ManyToManyField("products.Product", blank=True)
     categories = models.ManyToManyField("categories.Category", blank=True)
     collections = models.ManyToManyField("collections.Collection", blank=True)
-    start_date = models.DateTimeField(default=timezone.now)
-    end_date = models.DateTimeField(null=True, blank=True)
 
     objects = SaleQueryset.as_manager()
 

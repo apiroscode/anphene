@@ -1,9 +1,12 @@
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Optional
 
 from .. import ProductAvailabilityStatus
 from ..models import Product, ProductVariant
+from ...collections.models import Collection
 from ...core.data import MoneyRange
+from ...discounts import DiscountInfo
+from ...discounts.utils import calculate_discounted_price
 
 
 @dataclass
@@ -22,7 +25,7 @@ class VariantAvailability:
     discount: int
 
 
-def get_product_availability_status(product: "Product", country: str) -> ProductAvailabilityStatus:
+def get_product_availability_status(product: "Product") -> ProductAvailabilityStatus:
     variants_available_quantity = product.variants.annotate_available_quantity().values_list(
         "available_quantity", flat=True
     )
@@ -48,15 +51,73 @@ def get_product_availability_status(product: "Product", country: str) -> Product
     return ProductAvailabilityStatus.READY_FOR_PURCHASE
 
 
-def get_product_availability(product: Product, discounts=None) -> ProductAvailability:
-    discounted = product.get_price_range(discounts)
-    prices = [variant.price for variant in product.variants.all()]
-    undiscounted = MoneyRange(min(prices), max(prices))
-    discount = (
-        undiscounted.start - discounted.start if undiscounted.start > discounted.start else 0
+def _get_total_discount_from_range(
+    undiscounted: MoneyRange, discounted: MoneyRange
+) -> Optional[int]:
+    """Calculate the discount amount between two TaxedMoneyRange.
+
+    Subtract two prices and return their total discount, if any.
+    Otherwise, it returns None.
+    """
+    return _get_total_discount(undiscounted.start, discounted.start)
+
+
+def _get_total_discount(undiscounted: int, discounted: int) -> Optional[int]:
+    """Calculate the discount amount between two TaxedMoney.
+
+    Subtract two prices and return their total discount, if any.
+    Otherwise, it returns None.
+    """
+    if undiscounted > discounted:
+        return undiscounted - discounted
+    return None
+
+
+def get_variant_price(
+    *,
+    variant: ProductVariant,
+    product: Product,
+    collections: Iterable[Collection],
+    discounts: Iterable[DiscountInfo],
+):
+    return calculate_discounted_price(
+        product=product, price=variant.price, collections=collections, discounts=discounts,
     )
 
-    is_on_sale = product.is_visible and discount != 0
+
+def get_product_price_range(
+    *,
+    product: Product,
+    variants: Iterable[ProductVariant],
+    collections: Iterable[Collection],
+    discounts: Iterable[DiscountInfo],
+) -> MoneyRange:
+    prices = [
+        get_variant_price(
+            variant=variant, product=product, collections=collections, discounts=discounts,
+        )
+        for variant in variants
+    ]
+    return MoneyRange(min(prices), max(prices))
+
+
+def get_product_availability(
+    *,
+    product: Product,
+    variants: Iterable[ProductVariant],
+    collections: Iterable[Collection],
+    discounts: Iterable[DiscountInfo],
+) -> ProductAvailability:
+    discounted = get_product_price_range(
+        product=product, variants=variants, collections=collections, discounts=discounts,
+    )
+    undiscounted = get_product_price_range(
+        product=product, variants=variants, collections=collections, discounts=[]
+    )
+
+    discount = _get_total_discount_from_range(undiscounted, discounted)
+
+    is_on_sale = product.is_visible and discount is not None
     return ProductAvailability(
         on_sale=is_on_sale,
         price_range=discounted,
@@ -66,13 +127,21 @@ def get_product_availability(product: Product, discounts=None) -> ProductAvailab
 
 
 def get_variant_availability(
-    variant: ProductVariant, product: Product, discounts=None
+    variant: ProductVariant,
+    product: Product,
+    collections: Iterable[Collection],
+    discounts: Iterable[DiscountInfo],
 ) -> VariantAvailability:
-    discounted = variant.get_price(discounts)
-    undiscounted = variant.price
-    discount = undiscounted - discounted if undiscounted > discounted else 0
+    discounted = get_variant_price(
+        variant=variant, product=product, collections=collections, discounts=discounts,
+    )
+    undiscounted = get_variant_price(
+        variant=variant, product=product, collections=collections, discounts=[]
+    )
 
-    is_on_sale = product.is_visible and discount != 0
+    discount = _get_total_discount(undiscounted, discounted)
+
+    is_on_sale = product.is_visible and discount is not None
 
     return VariantAvailability(
         on_sale=is_on_sale, price=discounted, price_undiscounted=undiscounted, discount=discount,

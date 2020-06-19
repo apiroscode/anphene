@@ -12,59 +12,19 @@ from core.graph.types import Image, MoneyRange
 from core.graph.utils import get_database_id
 from core.utils.images import get_product_image_thumbnail, get_thumbnail
 from .. import models
-from ..utils.availability import get_product_availability, get_variant_availability
-from ...attributes import models as attributes_models
+from ..dataloaders import (
+    CollectionsByProductIdLoader,
+    ImagesByProductIdLoader,
+    ProductByIdLoader,
+    ProductVariantsByProductIdLoader,
+    SelectedAttributesByProductIdLoader,
+    SelectedAttributesByProductVariantIdLoader,
+)
+from ..utils.availability import get_variant_availability
 from ...attributes.types import SelectedAttribute
 from ...collections.types import Collection
 from ...core.permissions import ProductPermissions
-
-
-def resolve_attribute_list(instance, *, user):
-    """Resolve attributes from a product into a list of `SelectedAttribute`s.
-    Note: you have to prefetch the below M2M fields.
-        - product_type -> attribute[rel] -> [rel]assignments -> values
-        - product_type -> attribute[rel] -> attribute
-    """
-    resolved_attributes = []
-
-    # Retrieve the product type
-    if isinstance(instance, models.Product):
-        product_type = instance.product_type
-        product_type_attributes_assoc_field = "attributeproduct"
-        assigned_attribute_instance_field = "productassignments"
-        assigned_attribute_instance_filters = {"product_id": instance.pk}
-    elif isinstance(instance, models.ProductVariant):
-        product_type = instance.product.product_type
-        product_type_attributes_assoc_field = "attributevariant"
-        assigned_attribute_instance_field = "variantassignments"
-        assigned_attribute_instance_filters = {"variant_id": instance.pk}
-    else:
-        raise AssertionError(f"{instance.__class__.__name__} is unsupported")
-
-    # Retrieve all the product attributes assigned to this product type
-    attributes_qs = getattr(product_type, product_type_attributes_assoc_field)
-    attributes_qs = attributes_qs.get_visible_to_user(user)
-
-    # An empty QuerySet for unresolved values
-    empty_qs = attributes_models.AttributeValue.objects.none()
-
-    # Goes through all the attributes assigned to the product type
-    # The assigned values are returned as a QuerySet, but will assign a
-    # dummy empty QuerySet if no values are assigned to the given instance.
-    for attr_data_rel in attributes_qs:
-        attr_instance_data = getattr(attr_data_rel, assigned_attribute_instance_field)
-
-        # Retrieve the instance's associated data
-        attr_data = attr_instance_data.filter(**assigned_attribute_instance_filters)
-        attr_data = attr_data.first()
-
-        # Return the instance's attribute values if the assignment was found,
-        # otherwise it sets the values as an empty QuerySet
-        values = attr_data.values.all() if attr_data is not None else empty_qs
-        resolved_attributes.append(
-            SelectedAttribute(attribute=attr_data_rel.attribute, values=values)
-        )
-    return resolved_attributes
+from ...discounts.dataloaders import DiscountsByDateTimeLoader
 
 
 class Margin(graphene.ObjectType):
@@ -123,17 +83,12 @@ class Product(CountableDjangoObjectType):
         id=graphene.Argument(graphene.ID, description="ID of a product image."),
         description="Get a single product image by ID.",
     )
-    variants = gql_optimizer.field(
-        graphene.List(lambda: ProductVariant, description="List of variants for the product"),
-        model_field="variants",
+    variants = graphene.List(
+        lambda: ProductVariant, description="List of variants for the product."
     )
-    images = gql_optimizer.field(
-        graphene.List(lambda: ProductImage, description="List of images for the product"),
-        model_field="images",
-    )
-    collections = gql_optimizer.field(
-        graphene.List(lambda: Collection, description="List of collections for the product"),
-        model_field="collections",
+    images = graphene.List(lambda: ProductImage, description="List of images for the product.")
+    collections = graphene.List(
+        lambda: Collection, description="List of collections for the product."
     )
 
     class Meta:
@@ -157,21 +112,43 @@ class Product(CountableDjangoObjectType):
         ]
 
     @staticmethod
-    @gql_optimizer.resolver_hints(prefetch_related="images")
     def resolve_thumbnail(root: models.Product, info, *, size=255):
-        image = root.get_first_image()
-        if image:
-            url = get_product_image_thumbnail(image, size, method="thumbnail")
-            alt = image.alt
-            return Image(alt=alt, url=info.context.build_absolute_uri(url))
-        return None
+        def return_first_thumbnail(images):
+            image = images[0] if images else None
+            if image:
+                url = get_product_image_thumbnail(image, size, method="thumbnail")
+                alt = image.alt
+                return Image(alt=alt, url=info.context.build_absolute_uri(url))
+            return None
+
+        return ImagesByProductIdLoader(info.context).load(root.id).then(return_first_thumbnail)
 
     @staticmethod
-    @gql_optimizer.resolver_hints(prefetch_related=("variants", "collections"))
-    def resolve_pricing(root: models.Product, info):
+    def resolve_pricing(root: models.ProductVariant, info):
         context = info.context
-        availability = get_product_availability(root, context.discounts)
-        return ProductPricingInfo(**asdict(availability))
+        product = ProductByIdLoader(context).load(root.product_id)
+        collections = CollectionsByProductIdLoader(context).load(root.product_id)
+
+        def calculate_pricing_info(discounts):
+            def calculate_pricing_with_product(product):
+                def calculate_pricing_with_collections(collections):
+                    availability = get_variant_availability(
+                        variant=root,
+                        product=product,
+                        collections=collections,
+                        discounts=discounts,
+                    )
+                    return VariantPricingInfo(**asdict(availability))
+
+                return collections.then(calculate_pricing_with_collections)
+
+            return product.then(calculate_pricing_with_product)
+
+        return (
+            DiscountsByDateTimeLoader(context)
+            .load(info.context.request_time)
+            .then(calculate_pricing_info)
+        )
 
     @staticmethod
     @gql_optimizer.resolver_hints(prefetch_related="variants")
@@ -184,14 +161,8 @@ class Product(CountableDjangoObjectType):
         return root.is_visible and in_stock
 
     @staticmethod
-    @gql_optimizer.resolver_hints(
-        prefetch_related=[
-            "product_type__attributeproduct__productassignments__values",
-            "product_type__attributeproduct__attribute",
-        ]
-    )
     def resolve_attributes(root: models.Product, info):
-        return resolve_attribute_list(root, user=info.context.user)
+        return SelectedAttributesByProductIdLoader(info.context).load(root.id)
 
     @staticmethod
     def resolve_image_by_id(root: models.Product, info, id):
@@ -202,13 +173,12 @@ class Product(CountableDjangoObjectType):
             raise GraphQLError("Product image not found.")
 
     @staticmethod
-    @gql_optimizer.resolver_hints(model_field="images")
-    def resolve_images(root: models.Product, *_args, **_kwargs):
-        return root.images.all()
+    def resolve_images(root: models.Product, info, **_kwargs):
+        return ImagesByProductIdLoader(info.context).load(root.id)
 
     @staticmethod
-    def resolve_variants(root: models.Product, *_args, **_kwargs):
-        return root.variants.all()
+    def resolve_variants(root: models.Product, info, **_kwargs):
+        return ProductVariantsByProductIdLoader(info.context).load(root.id)
 
     @staticmethod
     def resolve_collections(root: models.Product, *_args):
@@ -266,18 +236,35 @@ class ProductVariant(CountableDjangoObjectType):
         model = models.ProductVariant
 
     @staticmethod
-    @gql_optimizer.resolver_hints(prefetch_related=("product",), only=["price_override"])
     def resolve_pricing(root: models.ProductVariant, info):
         context = info.context
-        availability = get_variant_availability(root, root.product, context.discounts,)
-        return ProductPricingInfo(**asdict(availability))
+        product = ProductByIdLoader(context).load(root.product_id)
+        collections = CollectionsByProductIdLoader(context).load(root.product_id)
+
+        def calculate_pricing_info(discounts):
+            def calculate_pricing_with_product(product):
+                def calculate_pricing_with_collections(collections):
+                    availability = get_variant_availability(
+                        variant=root,
+                        product=product,
+                        collections=collections,
+                        discounts=discounts,
+                    )
+                    return VariantPricingInfo(**asdict(availability))
+
+                return collections.then(calculate_pricing_with_collections)
+
+            return product.then(calculate_pricing_with_product)
+
+        return (
+            DiscountsByDateTimeLoader(context)
+            .load(info.context.request_time)
+            .then(calculate_pricing_info)
+        )
 
     @staticmethod
-    @gql_optimizer.resolver_hints(
-        prefetch_related=["attributes__values", "attributes__assignment__attribute"]
-    )
     def resolve_attributes(root: models.ProductVariant, info):
-        return resolve_attribute_list(root, user=info.context.user)
+        return SelectedAttributesByProductVariantIdLoader(info.context).load(root.id)
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
@@ -299,6 +286,15 @@ class ProductVariant(CountableDjangoObjectType):
     @staticmethod
     def resolve_images(root: models.ProductVariant, *_args):
         return root.images.all()
+
+    @classmethod
+    def get_node(cls, info, pk):
+        user = info.context.user
+        visible_products = models.Product.objects.visible_to_user(
+            user, ProductPermissions.MANAGE_PRODUCTS
+        ).values_list("pk", flat=True)
+        qs = cls._meta.model.objects.filter(product__id__in=visible_products)
+        return qs.filter(pk=pk).first()
 
 
 class ProductImage(CountableDjangoObjectType):

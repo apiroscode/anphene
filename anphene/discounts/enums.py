@@ -1,11 +1,11 @@
 import graphene
 
-from . import DiscountValueType, VoucherType
+from . import DiscountType, VoucherType
 
 
-class DiscountValueTypeEnum(graphene.Enum):
-    FIXED = DiscountValueType.FIXED
-    PERCENTAGE = DiscountValueType.PERCENTAGE
+class DiscountTypeEnum(graphene.Enum):
+    FIXED = DiscountType.FIXED
+    PERCENTAGE = DiscountType.PERCENTAGE
 
 
 class VoucherTypeEnum(graphene.Enum):

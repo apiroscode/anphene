@@ -22,24 +22,23 @@ def email_sender_name_validators():
 
 
 class SiteSettings(models.Model):
-    # TODO: after all success
     site = models.OneToOneField(Site, related_name="settings", on_delete=models.CASCADE)
     header_text = models.CharField(max_length=200, blank=True)
     description = models.CharField(max_length=500, blank=True)
-    # top_menu = models.ForeignKey(
-    #     "menu.Menu", on_delete=models.SET_NULL, related_name="+", blank=True, null=True
-    # )
-    # bottom_menu = models.ForeignKey(
-    #     "menu.Menu", on_delete=models.SET_NULL, related_name="+", blank=True, null=True
-    # )
+    top_menu = models.ForeignKey(
+        "menus.Menu", on_delete=models.SET_NULL, related_name="+", blank=True, null=True
+    )
+    bottom_menu = models.ForeignKey(
+        "menus.Menu", on_delete=models.SET_NULL, related_name="+", blank=True, null=True
+    )
     track_inventory_by_default = models.BooleanField(default=True)
-    # homepage_collection = models.ForeignKey(
-    #     "product.Collection",
-    #     on_delete=models.SET_NULL,
-    #     related_name="+",
-    #     blank=True,
-    #     null=True,
-    # )
+    homepage_collection = models.ForeignKey(
+        "collections.Collection",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+    )
     automatic_fulfillment_digital_products = models.BooleanField(default=False)
     default_digital_max_downloads = models.IntegerField(blank=True, null=True)
     default_digital_url_valid_days = models.IntegerField(blank=True, null=True)

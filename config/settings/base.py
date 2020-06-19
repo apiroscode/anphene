@@ -72,6 +72,8 @@ LOCAL_APPS = [
     "anphene.categories.apps.CategoriesConfig",
     "anphene.collections.apps.CollectionsConfig",
     "anphene.discounts.apps.DiscountsConfig",
+    "anphene.menus.apps.MenusConfig",
+    "anphene.pages.apps.PagesConfig",
     "anphene.products.apps.ProductsConfig",
     "anphene.regions.apps.RegionsConfig",
     "anphene.suppliers.apps.SuppliersConfig",
@@ -127,6 +129,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "anphene.core.middleware.request_time",
+    "anphene.core.middleware.discounts",
+    "anphene.core.middleware.site",
 ]
 
 # STATIC

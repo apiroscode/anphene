@@ -6,10 +6,10 @@ from core.graph.fields import PrefetchingConnectionField
 from ..categories.types import Category
 from ..collections.types import Collection
 from ..products.types.products import Product
-from .enums import DiscountValueTypeEnum, VoucherTypeEnum
+from .enums import DiscountTypeEnum, VoucherTypeEnum
 from . import models
 import graphene_django_optimizer as gql_optimizer
-from ..core.permissions import CollectionPermissions, ProductPermissions
+from ..core.permissions import CollectionPermissions, ProductPermissions, DiscountPermissions
 
 
 class Sale(CountableDjangoObjectType):
@@ -73,30 +73,12 @@ class Voucher(CountableDjangoObjectType):
         ),
         model_field="products",
     )
-    countries = graphene.List(
-        types.CountryDisplay, description="List of countries available for the shipping voucher.",
-    )
-    translation = graphene.Field(
-        VoucherTranslation,
-        language_code=graphene.Argument(
-            LanguageCodeEnum,
-            description="A language code to return the translation for.",
-            required=True,
-        ),
-        description="Returns translated Voucher fields for the given language code.",
-        resolver=resolve_translation,
-    )
-    discount_value_type = DiscountValueTypeEnum(
+
+    discount_type = DiscountTypeEnum(
         description="Determines a type of discount for voucher - value or percentage",
         required=True,
     )
     type = VoucherTypeEnum(description="Determines a type of voucher.", required=True)
-    min_amount_spent = graphene.Field(
-        types.Money,
-        deprecation_reason=(
-            "DEPRECATED: Will be removed in Saleor 2.10, " "use the minSpent field instead."
-        ),
-    )
 
     class Meta:
         description = (
@@ -105,20 +87,20 @@ class Voucher(CountableDjangoObjectType):
             "providing valid voucher codes."
         )
         only_fields = [
-            "apply_once_per_order",
-            "apply_once_per_customer",
-            "code",
-            "discount_value",
-            "discount_value_type",
-            "end_date",
             "id",
-            "min_spent",
-            "min_checkout_items_quantity",
-            "name",
-            "start_date",
             "type",
+            "name",
+            "code",
             "usage_limit",
             "used",
+            "start_date",
+            "end_date",
+            "apply_once_per_order",
+            "apply_once_per_customer",
+            "discount_type",
+            "discount_value",
+            "min_spent_amount",
+            "min_checkout_items_quantity",
         ]
         interfaces = [relay.Node]
         model = models.Voucher
@@ -129,19 +111,10 @@ class Voucher(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_collections(root: models.Voucher, info, **_kwargs):
-        return root.collections.visible_to_user(info.context.user)
+        return root.collections.visible_to_user(
+            info.context.user, CollectionPermissions.MANAGE_COLLECTIONS
+        )
 
     @staticmethod
     def resolve_products(root: models.Voucher, info, **_kwargs):
-        return root.products.visible_to_user(info.context.user)
-
-    @staticmethod
-    def resolve_countries(root: models.Voucher, *_args, **_kwargs):
-        return [
-            types.CountryDisplay(code=country.code, country=country.name)
-            for country in root.countries
-        ]
-
-    @staticmethod
-    def resolve_min_amount_spent(root: models.Voucher, *_args, **_kwargs):
-        return root.min_spent
+        return root.products.visible_to_user(info.context.user, ProductPermissions.MANAGE_PRODUCTS)

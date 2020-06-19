@@ -1,8 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Set, Union
+from typing import List, Set, TYPE_CHECKING, Union
+
+if TYPE_CHECKING:
+    # flake8: noqa
+    from .models import Sale, Voucher
 
 
-class DiscountValueType:
+class DiscountType:
     FIXED = "fixed"
     PERCENTAGE = "percentage"
 
