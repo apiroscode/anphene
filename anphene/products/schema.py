@@ -1,7 +1,8 @@
 import graphene
 
-from core.graph.fields import FilterInputConnectionField
-from .filters import ProductTypeFilterInput
+from core.graph.fields import FilterInputConnectionField, PrefetchingConnectionField
+from core.graph.utils import get_node_or_slug
+from .filters import ProductFilterInput, ProductTypeFilterInput
 from .mutations.product_types import (
     AttributeAssign,
     AttributeUnassign,
@@ -11,9 +12,29 @@ from .mutations.product_types import (
     ProductTypeReorderAttributes,
     ProductTypeUpdate,
 )
-from .resolvers import resolve_product_types
-from .sorters import ProductTypeSortingInput
+from .mutations.products import (
+    ProductBulkDelete,
+    ProductBulkPublish,
+    ProductCreate,
+    ProductDelete,
+    ProductImageBulkDelete,
+    ProductImageCreate,
+    ProductImageDelete,
+    ProductImageReorder,
+    ProductImageUpdate,
+    ProductUpdate,
+    ProductVariantBulkCreate,
+    ProductVariantBulkDelete,
+    ProductVariantCreate,
+    ProductVariantDelete,
+    ProductVariantUpdate,
+    VariantImageAssign,
+    VariantImageUnassign,
+)
+from .resolvers import resolve_product_types, resolve_product_variants, resolve_products
+from .sorters import ProductSortingInput, ProductTypeSortingInput
 from .types.product_types import ProductType
+from .types.products import Product, ProductVariant
 
 
 class ProductQueries(graphene.ObjectType):
@@ -29,11 +50,47 @@ class ProductQueries(graphene.ObjectType):
         description="List of the shop's product types.",
     )
 
+    product = graphene.Field(
+        Product,
+        id=graphene.Argument(graphene.ID, description="ID of the product.", required=True),
+        description="Look up a product by ID.",
+    )
+
+    products = FilterInputConnectionField(
+        Product,
+        filter=ProductFilterInput(description="Filtering options for products."),
+        sort_by=ProductSortingInput(description="Sort products."),
+        description="List of the shop's products.",
+    )
+
+    product_variant = graphene.Field(
+        ProductVariant,
+        id=graphene.Argument(graphene.ID, description="ID of the product variant.", required=True),
+        description="Look up a product variant by ID.",
+    )
+    product_variants = PrefetchingConnectionField(
+        ProductVariant,
+        ids=graphene.List(graphene.ID, description="Filter product variants by given IDs."),
+        description="List of product variants.",
+    )
+
     def resolve_product_type(self, info, id):
         return graphene.Node.get_node_from_global_id(info, id, ProductType)
 
     def resolve_product_types(self, info, **kwargs):
         return resolve_product_types(info, **kwargs)
+
+    def resolve_product(self, info, id):
+        return get_node_or_slug(info, id, Product)
+
+    def resolve_products(self, info, **kwargs):
+        return resolve_products(info, **kwargs)
+
+    def resolve_product_variant(self, info, id):
+        return graphene.Node.get_node_from_global_id(info, id, ProductVariant)
+
+    def resolve_product_variants(self, info, ids=None, **_kwargs):
+        return resolve_product_variants(info, ids)
 
 
 class ProductMutations(graphene.ObjectType):
@@ -45,3 +102,26 @@ class ProductMutations(graphene.ObjectType):
     product_type_reorder_attribute = ProductTypeReorderAttributes.Field()
     attribute_assign = AttributeAssign.Field()
     attribute_unassign = AttributeUnassign.Field()
+
+    # Product mutations
+    product_create = ProductCreate.Field()
+    product_update = ProductUpdate.Field()
+    product_delete = ProductDelete.Field()
+    product_bulk_delete = ProductBulkDelete.Field()
+    product_bulk_publish = ProductBulkPublish.Field()
+
+    # Product variant mutations
+    product_variant_create = ProductVariantCreate.Field()
+    product_variant_update = ProductVariantUpdate.Field()
+    product_variant_delete = ProductVariantDelete.Field()
+    product_variant_bulk_create = ProductVariantBulkCreate.Field()
+    product_variant_bulk_delete = ProductVariantBulkDelete.Field()
+    variant_image_assign = VariantImageAssign.Field()
+    variant_image_unassign = VariantImageUnassign.Field()
+
+    # Product image mutations
+    product_image_create = ProductImageCreate.Field()
+    product_image_update = ProductImageUpdate.Field()
+    product_image_delete = ProductImageDelete.Field()
+    product_image_bulk_delete = ProductImageBulkDelete.Field()
+    product_image_reorder = ProductImageReorder.Field()

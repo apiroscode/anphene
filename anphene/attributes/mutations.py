@@ -18,14 +18,14 @@ from .types import Attribute, AttributeValue
 from ..core.permissions import AttributePermissions
 
 
-class AttributeValueInput(graphene.InputObjectType):
+class AttributeValueCreateInput(graphene.InputObjectType):
     name = graphene.String(
         required=True, description="Name of a value displayed in the interface."
     )
     value = graphene.String(required=False, description="Value of a real value in the interface.")
 
 
-class AttributeInput(graphene.InputObjectType):
+class AttributeBaseInput(graphene.InputObjectType):
     name = graphene.String(
         required=True, description="Name of an attribute displayed in the interface."
     )
@@ -54,11 +54,11 @@ class AttributeInput(graphene.InputObjectType):
     )
 
 
-class AttributeCreateInput(AttributeInput):
+class AttributeCreateInput(AttributeBaseInput):
     input_type = AttributeInputTypeEnum(
         description="The input type to use for entering attribute values in the dashboard."
     )
-    values = graphene.List(AttributeValueInput, description="List of attribute's values.")
+    values = graphene.List(AttributeValueCreateInput, description="List of attribute's values.")
 
 
 class ReorderInput(graphene.InputObjectType):
@@ -160,7 +160,7 @@ class AttributeCreate(ModelMutation):
 class AttributeUpdate(ModelMutation):
     class Arguments:
         id = graphene.ID(required=True, description="ID of an attribute to update.")
-        input = AttributeInput(
+        input = AttributeBaseInput(
             required=True, description="Fields required to update an attribute."
         )
 
@@ -212,7 +212,7 @@ class AttributeValueCreate(ModelMutation):
             name="attribute",
             description="Attribute to which value will be assigned.",
         )
-        input = AttributeValueInput(
+        input = AttributeValueCreateInput(
             required=True, description="Fields required to create an AttributeValue."
         )
 
@@ -250,7 +250,7 @@ class AttributeValueUpdate(ModelMutation):
 
     class Arguments:
         id = graphene.ID(required=True, description="ID of an AttributeValue to update.")
-        input = AttributeValueInput(
+        input = AttributeValueCreateInput(
             required=True, description="Fields required to update an AttributeValue."
         )
 

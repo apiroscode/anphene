@@ -92,3 +92,14 @@ class SelectedAttribute(graphene.ObjectType):
 
     class Meta:
         description = "Represents a custom attribute."
+
+
+class AttributeInput(graphene.InputObjectType):
+    slug = graphene.String(
+        required=True, description="Internal representation of an attribute name."
+    )
+    values = graphene.List(
+        graphene.String,
+        required=False,
+        description="Internal representation of a value (unique per attribute).",
+    )

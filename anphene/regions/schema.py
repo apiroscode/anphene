@@ -4,6 +4,8 @@ from core.graph.fields import BaseDjangoConnectionField, FilterInputConnectionFi
 from core.graph.types import FilterInputObjectType
 from .filters import CityFilter, SubDistrictFilter
 from .types import City, Province, SubDistrict
+import graphene_django_optimizer as gql_optimizer
+from . import models
 
 
 class CityFilterInput(FilterInputObjectType):

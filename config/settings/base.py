@@ -71,6 +71,7 @@ LOCAL_APPS = [
     "anphene.attributes.apps.AttributesConfig",
     "anphene.categories.apps.CategoriesConfig",
     "anphene.collections.apps.CollectionsConfig",
+    "anphene.discounts.apps.DiscountsConfig",
     "anphene.products.apps.ProductsConfig",
     "anphene.regions.apps.RegionsConfig",
     "anphene.suppliers.apps.SuppliersConfig",
@@ -267,6 +268,8 @@ GRAPHENE = {
 # ------------------------------------------------------------------------------
 APP_NAME = env("APP_NAME", default="")
 
+SEARCH_BACKEND = "anphene.search.backends.postgresql"
+
 VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
     "products": [
         ("product_gallery", "thumbnail__540x540"),
@@ -299,3 +302,4 @@ CORS_ALLOW_METHODS = [
 ]
 
 ENABLE_SSL = env.bool("ENABLE_SSL", default=False)
+MAX_CHECKOUT_LINE_QUANTITY = 50

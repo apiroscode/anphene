@@ -21,6 +21,10 @@ class CollectionPermissions(BasePermissionEnum):
     MANAGE_COLLECTIONS = "collections.manage_collections"
 
 
+class DiscountPermissions(BasePermissionEnum):
+    MANAGE_DISCOUNTS = "discounts.manage_discounts"
+
+
 class GroupPermissions(BasePermissionEnum):
     MANAGE_GROUPS = "users.manage_groups"
 
@@ -47,6 +51,7 @@ PERMISSIONS_ENUMS = [
     AttributePermissions,
     CategoryPermissions,
     CollectionPermissions,
+    DiscountPermissions,
     GroupPermissions,
     ProductPermissions,
     SitePermissions,

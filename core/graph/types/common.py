@@ -57,8 +57,8 @@ class Image(graphene.ObjectType):
 
 
 class PriceRangeInput(graphene.InputObjectType):
-    gte = graphene.Float(description="Price greater than or equal to.", required=False)
-    lte = graphene.Float(description="Price less than or equal to.", required=False)
+    gte = graphene.Int(description="Price greater than or equal to.", required=False)
+    lte = graphene.Int(description="Price less than or equal to.", required=False)
 
 
 class DateRangeInput(graphene.InputObjectType):

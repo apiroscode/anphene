@@ -3,10 +3,7 @@ from graphene import relay
 from core.graph.connection import CountableDjangoObjectType
 from core.graph.fields import PrefetchingConnectionField
 from . import models
-from .dataloader import (
-    CityByProvinceIdLoader,
-    SubDistrictByCityIdLoader,
-)
+from .dataloader import CityByProvinceIdLoader, SubDistrictByCityIdLoader, CityByIdLoader
 
 
 class SubDistrict(CountableDjangoObjectType):
@@ -27,7 +24,7 @@ class City(CountableDjangoObjectType):
         return root.city_name
 
     @staticmethod
-    def resolve_sub_districts(root: models.City, info, **kwargs):
+    def resolve_sub_districts(root: models.City, info, **_kwargs):
         return SubDistrictByCityIdLoader(info.context).load(root.id)
 
 
@@ -40,5 +37,5 @@ class Province(CountableDjangoObjectType):
         model = models.Province
 
     @staticmethod
-    def resolve_cities(root: models.Province, info, **kwargs):
+    def resolve_cities(root: models.Province, info, **_kwargs):
         return CityByProvinceIdLoader(info.context).load(root.id)

@@ -1,4 +1,5 @@
 import graphene
+import graphene_django_optimizer as gql_optimizer
 from graphene import relay
 
 from core.decorators import permission_required
@@ -18,7 +19,9 @@ class ProductType(CountableDjangoObjectType):
     product_attributes = graphene.List(
         Attribute, description="Product attributes of that product type."
     )
-    available_attributes = FilterInputConnectionField(Attribute, filter=AttributeFilterInput())
+    available_attributes = gql_optimizer.field(
+        FilterInputConnectionField(Attribute, filter=AttributeFilterInput())
+    )
 
     class Meta:
         description = (
@@ -30,14 +33,16 @@ class ProductType(CountableDjangoObjectType):
         only_fields = ["id", "name", "has_variants"]
 
     @staticmethod
+    @gql_optimizer.resolver_hints(prefetch_related="product_attributes__attributeproduct")
     def resolve_product_attributes(root: models.ProductType, *_args, **_kwargs):
         return root.product_attributes.product_attributes_sorted().all()
 
     @staticmethod
+    @gql_optimizer.resolver_hints(prefetch_related="variant_attributes__attributevariant")
     def resolve_variant_attributes(root: models.ProductType, *_args, **_kwargs):
         return root.variant_attributes.variant_attributes_sorted().all()
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCT_TYPES)
-    def resolve_available_attributes(root: models.ProductType, info, **kwargs):
+    def resolve_available_attributes(root: models.ProductType, _info, **_kwargs):
         return attributes_models.Attribute.objects.get_unassigned_attributes(root.pk)

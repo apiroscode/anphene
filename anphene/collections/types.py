@@ -5,13 +5,13 @@ from core.graph.connection import CountableDjangoObjectType
 from core.graph.fields import PrefetchingConnectionField
 from core.graph.types import Image
 from . import models
-from ..products.types.products import Product
 from ..core.permissions import CollectionPermissions
 
 
 class Collection(CountableDjangoObjectType):
     products = PrefetchingConnectionField(
-        Product, description="List of products in this collection."
+        "anphene.products.types.products.Product",
+        description="List of products in this collection.",
     )
     background_image = graphene.Field(Image, size=graphene.Int(description="Size of the image."))
 
@@ -42,10 +42,8 @@ class Collection(CountableDjangoObjectType):
             )
 
     @staticmethod
-    def resolve_products(root: models.Collection, info, first=None, **kwargs):
-        return root.products.all()
-        # TODO: AFTER PRODUCT FINISH
-        # return root.products.collection_sorted(info.context.user)
+    def resolve_products(root: models.Collection, info, **_kwargs):
+        return root.products.collection_sorted(info.context.user)
 
     @classmethod
     def get_node(cls, info, id):
