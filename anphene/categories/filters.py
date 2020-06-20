@@ -1,5 +1,5 @@
 import django_filters
-from graphene_django.filter import GlobalIDMultipleChoiceFilter, GlobalIDFilter
+from graphene_django.filter import GlobalIDFilter, GlobalIDMultipleChoiceFilter
 
 from core.graph.types import FilterInputObjectType
 from core.utils.filters import filter_fields_containing_value

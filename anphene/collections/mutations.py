@@ -17,7 +17,6 @@ from . import models
 from .thumbnails import create_collection_background_image_thumbnails
 from .types import Collection
 from ..core.permissions import CollectionPermissions
-from ..products.tasks import update_products_minimal_variant_prices_of_catalogues_task
 from ..products.types.products import Product
 
 
@@ -146,11 +145,7 @@ class CollectionAddProducts(BaseMutation):
         )
         products = cls.get_nodes_or_error(products, "products", Product)
         collection.products.add(*products)
-        if collection.sale_set.exists():
-            pass
-            update_products_minimal_variant_prices_of_catalogues_task.delay(
-                product_ids=[p.pk for p in products]
-            )
+
         return CollectionAddProducts(collection=collection)
 
 
@@ -176,8 +171,5 @@ class CollectionRemoveProducts(BaseMutation):
         )
         products = cls.get_nodes_or_error(products, "products", only_type=Product)
         collection.products.remove(*products)
-        if collection.sale_set.exists():
-            update_products_minimal_variant_prices_of_catalogues_task.delay(
-                product_ids=[p.pk for p in products]
-            )
+
         return CollectionRemoveProducts(collection=collection)

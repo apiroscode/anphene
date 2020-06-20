@@ -10,7 +10,7 @@ from core.graph.filters import EnumFilter, ListObjectTypeFilter, ObjectTypeFilte
 from core.graph.types import FilterInputObjectType
 from core.graph.types.common import PriceRangeInput
 from core.graph.utils import get_nodes
-from core.utils.filters import filter_fields_containing_value
+from core.utils.filters import filter_fields_containing_value, filter_range_field
 from .enums import ProductTypeConfigurable, StockAvailability
 from .models import Product, ProductType, ProductVariant
 from ..attributes.models import Attribute
@@ -18,6 +18,7 @@ from ..attributes.types import AttributeInput
 from ..categories import types as categories_types
 from ..collections import types as collections_types
 from ..search.backends import picker
+from ..discounts import types as discount_types
 
 
 # PRODUCT TYPE
@@ -58,47 +59,46 @@ def filter_search(qs, _, value):
     return qs
 
 
-def filter_products_by_categories(qs, categories):
-    categories = [category.get_descendants(include_self=True) for category in categories]
-    ids = {category.id for tree in categories for category in tree}
-    return qs.filter(category__in=ids)
+def filter_has_category(qs, _, value):
+    return qs.filter(category__isnull=not value)
+
+
+def filter_products_by_relation(qs, sales, field):
+    return qs.filter(**{f"{field}__in": sales})
 
 
 def filter_categories(qs, _, value):
     if value:
         categories = get_nodes(value, categories_types.Category)
-        qs = filter_products_by_categories(qs, categories)
+        categories = [category.get_descendants(include_self=True) for category in categories]
+        ids = {category.id for tree in categories for category in tree}
+        qs = filter_products_by_relation(qs, ids, "category")
     return qs
-
-
-def filter_has_category(qs, _, value):
-    return qs.filter(category__isnull=not value)
-
-
-def filter_products_by_collections(qs, collections):
-    return qs.filter(collections__in=collections)
 
 
 def filter_collections(qs, _, value):
     if value:
         collections = get_nodes(value, collections_types.Collection)
-        qs = filter_products_by_collections(qs, collections)
+        qs = filter_products_by_relation(qs, collections, "collections")
     return qs
 
 
-def filter_products_by_minimal_price(qs, minimal_price_lte=None, minimal_price_gte=None):
-    if minimal_price_lte:
-        qs = qs.filter(minimal_variant_price_amount__lte=minimal_price_lte)
-    if minimal_price_gte:
-        qs = qs.filter(minimal_variant_price_amount__gte=minimal_price_gte)
+def filter_sales(qs, _, value):
+    if value:
+        collections = get_nodes(value, discount_types.Sale)
+        qs = filter_products_by_relation(qs, collections, "sale")
     return qs
 
 
-def filter_minimal_price(qs, _, value):
-    qs = filter_products_by_minimal_price(
-        qs, minimal_price_lte=value.get("lte"), minimal_price_gte=value.get("gte")
-    )
+def filter_vouchers(qs, _, value):
+    if value:
+        collections = get_nodes(value, discount_types.Voucher)
+        qs = filter_products_by_relation(qs, collections, "voucher")
     return qs
+
+
+def filter_price(qs, _, value):
+    return filter_range_field(qs, "price", value)
 
 
 def _clean_product_attributes_filter_input(filter_value):
@@ -176,12 +176,9 @@ class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
     collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
     categories = GlobalIDMultipleChoiceFilter(method=filter_categories)
+
     has_category = django_filters.BooleanFilter(method=filter_has_category)
-    minimal_price = ObjectTypeFilter(
-        input_class=PriceRangeInput,
-        method=filter_minimal_price,
-        field_name="minimal_price_amount",
-    )
+    price = ObjectTypeFilter(input_class=PriceRangeInput, method=filter_price)
     attributes = ListObjectTypeFilter(input_class=AttributeInput, method=filter_attributes)
     stock_availability = EnumFilter(
         input_class=StockAvailability, method=filter_stock_availability
@@ -196,7 +193,7 @@ class ProductFilter(django_filters.FilterSet):
             "collections",
             "categories",
             "has_category",
-            "minimal_price",
+            "price",
             "attributes",
             "stock_availability",
             "product_type",

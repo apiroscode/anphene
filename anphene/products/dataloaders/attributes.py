@@ -13,7 +13,6 @@ from ...attributes.models import (
     AttributeVariant,
 )
 from ...core.permissions import ProductPermissions
-from ...core.permissions import AttributePermissions
 
 
 class AttributeValuesByAttributeIdLoader(DataLoader):

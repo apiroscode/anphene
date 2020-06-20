@@ -21,7 +21,6 @@ from core.graph.utils import clean_seo_fields
 from core.utils import validate_slug_and_generate_if_needed
 from core.utils.images import validate_image_file
 from .. import models
-from ..tasks import update_product_minimal_variant_price_task
 from ..thumbnails import create_product_thumbnails
 from ..types.products import Product, ProductImage, ProductVariant
 from ..utils.attributes import (
@@ -311,7 +310,6 @@ class ProductCreate(ModelMutation):
                 raise ValidationError(
                     {"cost": ValidationError("Product cost cannot be lower than 0.")}
                 )
-            cleaned_input["minimal_variant_price_amount"] = cost
 
         quantity = cleaned_input.get("quantity")
         if quantity and quantity <= 0:
@@ -473,9 +471,6 @@ class ProductUpdate(ProductCreate):
                 update_fields.append("price")
             if update_fields:
                 variant.save(update_fields=update_fields)
-
-        # Recalculate the "minimal variant price"
-        update_product_minimal_variant_price_task.delay(instance.pk)
 
         attributes = cleaned_input.get("attributes")
         if attributes:
@@ -667,8 +662,6 @@ class ProductVariantCreate(ModelMutation):
     @transaction.atomic()
     def save(cls, info, instance, cleaned_input):
         instance.save()
-        # Recalculate the "minimal variant price" for the parent product
-        update_product_minimal_variant_price_task.delay(instance.product_id)
 
         attributes = cleaned_input.get("attributes")
         if attributes:
@@ -712,12 +705,6 @@ class ProductVariantDelete(ModelDeleteMutation):
         description = "Deletes a product variant."
         model = models.ProductVariant
         permissions = (ProductPermissions.MANAGE_PRODUCTS,)
-
-    @classmethod
-    def success_response(cls, instance):
-        # Update the "minimal_variant_prices" of the parent product
-        update_product_minimal_variant_price_task.delay(instance.product_id)
-        return super().success_response(instance)
 
 
 class ProductVariantBulkCreateInput(ProductVariantInput):
@@ -883,9 +870,6 @@ class ProductVariantBulkCreate(BaseMutation):
         if errors:
             raise ValidationError(errors)
         cls.save_variants(info, instances, cleaned_inputs)
-
-        # Recalculate the "minimal variant price" for the parent product
-        update_product_minimal_variant_price_task.delay(product.pk)
 
         return ProductVariantBulkCreate(count=len(instances), product_variants=instances)
 

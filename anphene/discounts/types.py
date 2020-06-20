@@ -1,15 +1,14 @@
-import graphene
+import graphene_django_optimizer as gql_optimizer
 from graphene import relay
 
 from core.graph.connection import CountableDjangoObjectType
 from core.graph.fields import PrefetchingConnectionField
+from . import models
+from .enums import DiscountTypeEnum, VoucherTypeEnum
 from ..categories.types import Category
 from ..collections.types import Collection
+from ..core.permissions import CollectionPermissions, ProductPermissions
 from ..products.types.products import Product
-from .enums import DiscountTypeEnum, VoucherTypeEnum
-from . import models
-import graphene_django_optimizer as gql_optimizer
-from ..core.permissions import CollectionPermissions, ProductPermissions, DiscountPermissions
 
 
 class Sale(CountableDjangoObjectType):

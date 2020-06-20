@@ -10,9 +10,9 @@ from core.db.fields import SanitizedJSONField
 from core.db.models import PublishableModel, SeoModel, SortableModel
 from core.utils.images import UploadToPathAndRename
 from .managers import ProductsQueryset, ProductVariantQueryset
+from ..core.data import MoneyRange
 from ..core.permissions import ProductPermissions
 from ..discounts.utils import calculate_discounted_price
-from ..core.data import MoneyRange
 
 
 class ProductType(models.Model):
@@ -50,7 +50,6 @@ class Product(SeoModel, PublishableModel):
     slug = models.SlugField(max_length=255, unique=True)
     description = SanitizedJSONField(blank=True, default=dict, sanitizer=clean_draft_js)
 
-    minimal_variant_price = models.PositiveIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
     objects = ProductsQueryset.as_manager()

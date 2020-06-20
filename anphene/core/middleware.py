@@ -1,6 +1,7 @@
 from django.contrib.sites.models import Site
 from django.utils import timezone
 from django.utils.functional import SimpleLazyObject
+
 from ..discounts.utils import fetch_discounts
 
 

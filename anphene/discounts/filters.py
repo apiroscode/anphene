@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from core.graph.filters import ListObjectTypeFilter, ObjectTypeFilter
 from core.graph.types import FilterInputObjectType
-from core.graph.types.common import DateTimeRangeInput, IntRangeInput
+from core.graph.types.common import DateRangeInput, IntRangeInput
 from core.utils.filters import filter_fields_containing_value, filter_range_field
 from . import DiscountType
 from .enums import DiscountStatusEnum, DiscountTypeEnum, VoucherDiscountType
@@ -51,7 +51,7 @@ def filter_discount_type(
 
 
 def filter_started(qs, _, value):
-    return filter_range_field(qs, "start_date", value)
+    return filter_range_field(qs, "start_date__date", value)
 
 
 def filter_sale_type(qs, _, value):
@@ -67,7 +67,7 @@ class VoucherFilter(django_filters.FilterSet):
     discount_type = ListObjectTypeFilter(
         input_class=VoucherDiscountType, method=filter_discount_type
     )
-    started = ObjectTypeFilter(input_class=DateTimeRangeInput, method=filter_started)
+    started = ObjectTypeFilter(input_class=DateRangeInput, method=filter_started)
     search = django_filters.CharFilter(method=filter_fields_containing_value("name", "code"))
 
     class Meta:
@@ -83,7 +83,7 @@ class VoucherFilterInput(FilterInputObjectType):
 class SaleFilter(django_filters.FilterSet):
     status = ListObjectTypeFilter(input_class=DiscountStatusEnum, method=filter_status)
     sale_type = ObjectTypeFilter(input_class=DiscountTypeEnum, method=filter_sale_type)
-    started = ObjectTypeFilter(input_class=DateTimeRangeInput, method=filter_started)
+    started = ObjectTypeFilter(input_class=DateRangeInput, method=filter_started)
     search = django_filters.CharFilter(
         method=filter_fields_containing_value("name", "value", "type")
     )

@@ -1,13 +1,13 @@
 from collections import defaultdict
 
-from ...categories.models import Category
-from ...collections.models import Collection, CollectionProduct
+from core.graph.dataloader import DataLoader
 from ..models import (
     Product,
     ProductImage,
     ProductVariant,
 )
-from core.graph.dataloader import DataLoader
+from ...categories.models import Category
+from ...collections.models import Collection, CollectionProduct
 from ...core.permissions import ProductPermissions
 
 

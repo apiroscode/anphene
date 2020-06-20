@@ -3,7 +3,7 @@ from graphene import relay
 from core.graph.connection import CountableDjangoObjectType
 from core.graph.fields import PrefetchingConnectionField
 from . import models
-from .dataloader import CityByProvinceIdLoader, SubDistrictByCityIdLoader, CityByIdLoader
+from .dataloader import CityByProvinceIdLoader, SubDistrictByCityIdLoader
 
 
 class SubDistrict(CountableDjangoObjectType):

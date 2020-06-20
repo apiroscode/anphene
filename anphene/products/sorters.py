@@ -1,4 +1,5 @@
 import graphene
+from django.db.models import Min
 
 from core.graph.types import SortInputObjectType
 
@@ -28,7 +29,7 @@ class ProductTypeSortingInput(SortInputObjectType):
 class ProductSortField(graphene.Enum):
     NAME = "name"
     SLUG = "slug"
-    MINIMAL_VARIANT_PRICE = "minimal_variant_price"
+    PRICE = "price"
     UPDATED_AT = "updated_at"
     PRODUCT_TYPE_NAME = "product_type__name"
 
@@ -38,13 +39,17 @@ class ProductSortField(graphene.Enum):
         descriptions = {
             ProductSortField.NAME.name: "name",
             ProductSortField.SLUG.name: "slug",
-            ProductSortField.MINIMAL_VARIANT_PRICE.name: "a minimal price of a product's variant",
+            ProductSortField.PRICE.name: "Minimal price from product variants",
             ProductSortField.UPDATED_AT.name: "update date",
             ProductSortField.PRODUCT_TYPE_NAME.name: "type",
         }
         if self.name in descriptions:
             return f"Sort products by {descriptions[self.name]}."
         raise ValueError("Unsupported enum value: %s" % self.value)
+
+    @staticmethod
+    def qs_with_price(queryset):
+        return queryset.annotate(price=Min("variants__price"))
 
 
 class ProductSortingInput(SortInputObjectType):

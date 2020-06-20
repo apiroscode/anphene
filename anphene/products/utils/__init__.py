@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 #
 # def calculate_revenue_for_variant(
 #     variant: "ProductVariant", start_date: Union["date", "datetime"]

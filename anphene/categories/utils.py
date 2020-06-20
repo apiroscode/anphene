@@ -3,9 +3,6 @@ from typing import List
 from django.db import transaction
 
 
-from ..products.tasks import update_products_minimal_variant_prices_task
-
-
 @transaction.atomic
 def delete_categories(categories_ids: List[str]):
     """
@@ -24,9 +21,7 @@ def delete_categories(categories_ids: List[str]):
         products = products | collect_categories_tree_products(category)
 
     products.update(is_published=False, publication_date=None)
-    product_ids = list(products.values_list("id", flat=True))
     categories.delete()
-    update_products_minimal_variant_prices_task.delay(product_ids=product_ids)
 
 
 def collect_categories_tree_products(category):

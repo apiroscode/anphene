@@ -1,12 +1,12 @@
 import graphene
 
 from core.graph.fields import FilterInputConnectionField
-from .types import Category
-from .mutations import CategoryCreate, CategoryUpdate, CategoryDelete, CategoryBulkDelete
-from .sorters import CategorySortingInput
-from .filters import CategoryFilterInput
-from .resolvers import resolve_categories
 from core.graph.utils import get_node_or_slug
+from .filters import CategoryFilterInput
+from .mutations import CategoryBulkDelete, CategoryCreate, CategoryDelete, CategoryUpdate
+from .resolvers import resolve_categories
+from .sorters import CategorySortingInput
+from .types import Category
 
 
 class CategoryQueries(graphene.ObjectType):

@@ -1,6 +1,5 @@
 from core.graph.utils import get_database_id
 from . import models
-from .filters import filter_products_by_stock_availability
 from ..core.permissions import ProductPermissions
 
 
@@ -8,12 +7,9 @@ def resolve_product_types(_info, **_kwargs):
     return models.ProductType.objects.all()
 
 
-def resolve_products(info, stock_availability=None, **_kwargs):
+def resolve_products(info, **_kwargs):
     user = info.context.user
     qs = models.Product.objects.visible_to_user(user, ProductPermissions.MANAGE_PRODUCTS)
-
-    if stock_availability:
-        qs = filter_products_by_stock_availability(qs, stock_availability)
 
     return qs.distinct()
 

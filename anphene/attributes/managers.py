@@ -1,8 +1,6 @@
 from django.db import models
 from django.db.models import F, Q
 
-from ..core.permissions import ProductPermissions
-
 
 class BaseAttributeQuerySet(models.QuerySet):
     @staticmethod

@@ -10,8 +10,6 @@ from ..core.permissions import ProductPermissions
 
 
 class ProductsQueryset(PublishedQuerySet):
-    MINIMAL_PRICE_FIELDS = {"minimal_variant_price_amount", "minimal_variant_price"}
-
     def collection_sorted(self, user):
         qs = self.visible_to_user(user, ProductPermissions.MANAGE_PRODUCTS)
         qs = qs.order_by(
@@ -107,35 +105,5 @@ class ProductsQueryset(PublishedQuerySet):
 
 
 class ProductVariantQueryset(models.QuerySet):
-    def create(self, **kwargs):
-        """Create a product's variant.
-
-        After the creation update the "minimal_variant_price" of the product.
-        """
-        variant = super().create(**kwargs)
-
-        from .tasks import update_product_minimal_variant_price_task
-
-        update_product_minimal_variant_price_task.delay(variant.product_id)
-        return variant
-
-    def bulk_create(self, objs, batch_size=None, ignore_conflicts=False):
-        """Insert each of the product's variant instances into the database.
-
-        After the creation update the "minimal_variant_price" of all the products.
-        """
-        variants = super().bulk_create(
-            objs, batch_size=batch_size, ignore_conflicts=ignore_conflicts
-        )
-        product_ids = set()
-        for obj in objs:
-            product_ids.add(obj.product_id)
-        product_ids = list(product_ids)
-
-        from .tasks import update_products_minimal_variant_prices_of_catalogues_task
-
-        update_products_minimal_variant_prices_of_catalogues_task.delay(product_ids=product_ids)
-        return variants
-
     def annotate_available_quantity(self):
         return self.annotate(available_quantity=F("quantity") - F("quantity_allocated"))

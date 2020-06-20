@@ -20,7 +20,7 @@ from ..dataloaders import (
     SelectedAttributesByProductIdLoader,
     SelectedAttributesByProductVariantIdLoader,
 )
-from ..utils.availability import get_variant_availability
+from ..utils.availability import get_product_availability, get_variant_availability
 from ...attributes.types import SelectedAttribute
 from ...collections.types import Collection
 from ...core.permissions import ProductPermissions
@@ -103,7 +103,6 @@ class Product(CountableDjangoObjectType):
             "name",
             "slug",
             "description",
-            "minimal_variant_price",
             "updated_at",
             "is_published",
             "publication_date",
@@ -124,25 +123,25 @@ class Product(CountableDjangoObjectType):
         return ImagesByProductIdLoader(info.context).load(root.id).then(return_first_thumbnail)
 
     @staticmethod
-    def resolve_pricing(root: models.ProductVariant, info):
+    def resolve_pricing(root: models.Product, info):
         context = info.context
-        product = ProductByIdLoader(context).load(root.product_id)
-        collections = CollectionsByProductIdLoader(context).load(root.product_id)
+        variants = ProductVariantsByProductIdLoader(context).load(root.id)
+        collections = CollectionsByProductIdLoader(context).load(root.id)
 
         def calculate_pricing_info(discounts):
-            def calculate_pricing_with_product(product):
+            def calculate_pricing_with_variants(variants):
                 def calculate_pricing_with_collections(collections):
-                    availability = get_variant_availability(
-                        variant=root,
-                        product=product,
+                    availability = get_product_availability(
+                        product=root,
+                        variants=variants,
                         collections=collections,
                         discounts=discounts,
                     )
-                    return VariantPricingInfo(**asdict(availability))
+                    return ProductPricingInfo(**asdict(availability))
 
                 return collections.then(calculate_pricing_with_collections)
 
-            return product.then(calculate_pricing_with_product)
+            return variants.then(calculate_pricing_with_variants)
 
         return (
             DiscountsByDateTimeLoader(context)
