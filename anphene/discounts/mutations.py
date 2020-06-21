@@ -66,7 +66,6 @@ class BaseDiscountCatalogueMutation(BaseMutation):
 
 class VoucherInput(graphene.InputObjectType):
     type = VoucherTypeEnum(description="Voucher type: PRODUCT, CATEGORY SHIPPING or ENTIRE_ORDER.")
-    name = graphene.String(description="Voucher name.")
     code = graphene.String(description="Code to use the voucher.")
     usage_limit = graphene.Int(
         description="Limit number of times this voucher can be used in total."
@@ -88,8 +87,8 @@ class VoucherInput(graphene.InputObjectType):
     discount_type = DiscountTypeEnum(description="Choices: fixed or percentage.")
     discount_value = graphene.Int(description="Value of the voucher.")
 
-    min_amount_spent = graphene.Int(
-        description="Min purchase amount required to apply the " "voucher."
+    min_spent_amount = graphene.Int(
+        description="Min purchase amount required to apply the voucher."
     )
     min_checkout_items_quantity = graphene.Int(
         description="Minimal quantity of checkout items required to apply the voucher."
@@ -124,9 +123,6 @@ class VoucherCreate(ModelMutation):
             raise ValidationError({"code": ValidationError("Promo code already exists.")})
         cleaned_input = super().clean_input(info, instance, data)
 
-        min_spent_amount = cleaned_input.pop("min_amount_spent", None)
-        if min_spent_amount is not None:
-            cleaned_input["min_spent_amount"] = min_spent_amount
         return cleaned_input
 
 

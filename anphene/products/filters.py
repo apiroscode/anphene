@@ -17,8 +17,8 @@ from ..attributes.models import Attribute
 from ..attributes.types import AttributeInput
 from ..categories import types as categories_types
 from ..collections import types as collections_types
-from ..search.backends import picker
 from ..discounts import types as discount_types
+from ..search.backends import picker
 
 
 # PRODUCT TYPE

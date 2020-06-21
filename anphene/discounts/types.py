@@ -88,7 +88,6 @@ class Voucher(CountableDjangoObjectType):
         only_fields = [
             "id",
             "type",
-            "name",
             "code",
             "usage_limit",
             "used",

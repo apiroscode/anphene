@@ -1,15 +1,14 @@
 from typing import List
 
 import django_filters
-from django.db.models import Q
 from django.utils import timezone
 
 from core.graph.filters import ListObjectTypeFilter, ObjectTypeFilter
 from core.graph.types import FilterInputObjectType
 from core.graph.types.common import DateRangeInput, IntRangeInput
 from core.utils.filters import filter_fields_containing_value, filter_range_field
-from . import DiscountType
-from .enums import DiscountStatusEnum, DiscountTypeEnum, VoucherDiscountType
+from . import DiscountType, VoucherType
+from .enums import DiscountStatusEnum, DiscountTypeEnum, VoucherTypeEnum
 from .models import Sale, Voucher, VoucherQueryset
 
 
@@ -31,27 +30,20 @@ def filter_times_used(qs, _, value):
     return filter_range_field(qs, "used", value)
 
 
-def filter_discount_type(
-    qs: VoucherQueryset, _, value: List[VoucherDiscountType]
-) -> VoucherQueryset:
-    if value:
-        query = Q()
-        if VoucherDiscountType.FIXED in value:
-            query |= Q(
-                discount_type=VoucherDiscountType.FIXED.value  # type: ignore
-            )
-        if VoucherDiscountType.PERCENTAGE in value:
-            query |= Q(
-                discount_type=VoucherDiscountType.PERCENTAGE.value  # type: ignore
-            )
-        if VoucherDiscountType.SHIPPING in value:
-            query |= Q(type=VoucherDiscountType.SHIPPING)
-        qs = qs.filter(query).distinct()
+def filter_started(qs, _, value):
+    return filter_range_field(qs, "start_date__date", value)
+
+
+def filter_voucher_type(qs, _, value):
+    if value in [VoucherType.SHIPPING, VoucherType.ENTIRE_ORDER, VoucherType.SPECIFIC_PRODUCT]:
+        qs = qs.filter(type=value)
     return qs
 
 
-def filter_started(qs, _, value):
-    return filter_range_field(qs, "start_date__date", value)
+def filter_discount_type(qs, _, value):
+    if value in [DiscountType.FIXED, DiscountType.PERCENTAGE]:
+        qs = qs.filter(discount_type=value)
+    return qs
 
 
 def filter_sale_type(qs, _, value):
@@ -64,9 +56,8 @@ class VoucherFilter(django_filters.FilterSet):
     status = ListObjectTypeFilter(input_class=DiscountStatusEnum, method=filter_status)
     times_used = ObjectTypeFilter(input_class=IntRangeInput, method=filter_times_used)
 
-    discount_type = ListObjectTypeFilter(
-        input_class=VoucherDiscountType, method=filter_discount_type
-    )
+    voucher_type = ListObjectTypeFilter(input_class=VoucherTypeEnum, method=filter_voucher_type)
+    discount_type = ListObjectTypeFilter(input_class=DiscountTypeEnum, method=filter_discount_type)
     started = ObjectTypeFilter(input_class=DateRangeInput, method=filter_started)
     search = django_filters.CharFilter(method=filter_fields_containing_value("name", "code"))
 

@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.postgres.fields import CICharField
 from django.db import models
 from django.utils import timezone
 
@@ -40,12 +41,12 @@ class Voucher(models.Model):
     type = models.CharField(
         max_length=20, choices=VoucherType.CHOICES, default=VoucherType.ENTIRE_ORDER
     )
-    name = models.CharField(max_length=255, blank=True)
-    code = models.CharField(max_length=12, unique=True, db_index=True)
-    usage_limit = models.PositiveIntegerField(null=True, blank=True)
+    code = CICharField(max_length=12, unique=True, db_index=True)
+    usage_limit = models.PositiveIntegerField(default=0)
     used = models.PositiveIntegerField(default=0, editable=False)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
+
     # this field indicates if discount should be applied per order or
     # individually to every item
     apply_once_per_order = models.BooleanField(default=False)
@@ -56,8 +57,8 @@ class Voucher(models.Model):
     )
     discount_value = models.PositiveIntegerField(default=0)
 
-    min_spent_amount = models.PositiveIntegerField(null=True, blank=True)
-    min_checkout_items_quantity = models.PositiveIntegerField(null=True, blank=True)
+    min_spent_amount = models.PositiveIntegerField(default=0)
+    min_checkout_items_quantity = models.PositiveIntegerField(default=0)
 
     products = models.ManyToManyField("products.Product", blank=True)
     collections = models.ManyToManyField("collections.Collection", blank=True)
