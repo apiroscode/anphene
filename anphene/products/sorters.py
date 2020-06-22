@@ -31,7 +31,6 @@ class ProductSortField(graphene.Enum):
     SLUG = "slug"
     PRICE = "price"
     UPDATED_AT = "updated_at"
-    PRODUCT_TYPE_NAME = "product_type__name"
 
     @property
     def description(self):
@@ -41,7 +40,6 @@ class ProductSortField(graphene.Enum):
             ProductSortField.SLUG.name: "slug",
             ProductSortField.PRICE.name: "Minimal price from product variants",
             ProductSortField.UPDATED_AT.name: "update date",
-            ProductSortField.PRODUCT_TYPE_NAME.name: "type",
         }
         if self.name in descriptions:
             return f"Sort products by {descriptions[self.name]}."

@@ -10,16 +10,10 @@ from ..core.permissions import DiscountPermissions
 
 
 def get_discount(discount_type, value, price):
-    after_discount = 0
     if discount_type == DiscountType.FIXED:
-        after_discount = price - value
+        return round(max(price - value, 0))
     elif discount_type == DiscountType.PERCENTAGE:
-        after_discount = price - (Decimal(value) / 100 * price)
-
-    if after_discount <= 0:
-        return price
-
-    return round(price - after_discount)
+        return round(max(price - (Decimal(value) / 100 * price), 0))
 
 
 class NotApplicable(ValueError):
