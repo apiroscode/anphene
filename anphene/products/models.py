@@ -91,6 +91,7 @@ class Product(SeoModel, PublishableModel):
 class ProductVariant(models.Model):
     product = models.ForeignKey("Product", related_name="variants", on_delete=models.CASCADE)
     sku = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, blank=True)
 
     images = models.ManyToManyField("ProductImage", through="VariantImage")
     track_inventory = models.BooleanField(default=True)

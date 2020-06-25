@@ -25,6 +25,7 @@ from ..thumbnails import create_product_thumbnails
 from ..types.products import Product, ProductImage, ProductVariant
 from ..utils.attributes import (
     associate_attribute_values_to_instance,
+    generate_name_for_variant,
     get_used_attribute_values_for_variant,
     get_used_variants_attribute_values,
     validate_attribute_input_for_product,
@@ -72,14 +73,16 @@ class ProductInput(graphene.InputObjectType):
         description=(
             "Stock keeping unit of a product. Note: this field is only used if "
             "a product doesn't use variants."
-        )
+        ),
+        required=False,
     )
     track_inventory = graphene.Boolean(
         description=(
             "Determines if the inventory of this product should be tracked. If false, "
             "the quantity won't change when customers buy this item. Note: this field "
             "is only used if a product doesn't use variants."
-        )
+        ),
+        required=False,
     )
     weight = graphene.Int(description="Weight of the Product.", required=False)
     cost = graphene.Int(description="Product cost.", required=False)
@@ -87,7 +90,8 @@ class ProductInput(graphene.InputObjectType):
     quantity = graphene.Int(
         description="""The total quantity of a product available for
         sale. Note: this field is only used if a product doesn't
-        use variants."""
+        use variants.""",
+        required=False,
     )
 
 
@@ -292,30 +296,6 @@ class ProductCreate(ModelMutation):
     def clean_input(cls, info, instance, data):
         cleaned_input = super().clean_input(info, instance, data)
 
-        weight = cleaned_input.get("weight", 0)
-        if weight <= 0:
-            raise ValidationError(
-                {"weight": ValidationError("Product can't have negative weight.")}
-            )
-
-        price = cleaned_input.get("price")
-        if price and price <= 0:
-            raise ValidationError(
-                {"price": ValidationError("Product price cannot be lower than 0.")}
-            )
-
-        cost = cleaned_input.get("cost")
-        if cost:
-            if cost < 0:
-                raise ValidationError(
-                    {"cost": ValidationError("Product cost cannot be lower than 0.")}
-                )
-
-        quantity = cleaned_input.get("quantity")
-        if quantity and quantity <= 0:
-            raise ValidationError(
-                {"quantity": ValidationError("Product quantity cannot be lower than 0.")}
-            )
         # Attributes are provided as list of `AttributeValueInput` objects.
         # We need to transform them into the format they're stored in the
         # `Product` model, which is HStore field that maps attribute's PK to
@@ -349,25 +329,61 @@ class ProductCreate(ModelMutation):
             )
 
         clean_seo_fields(cleaned_input)
-        cls.clean_sku(product_type, cleaned_input)
+        cls.clean_single_variants(product_type, cleaned_input)
+        cls.clean_sku(product_type, cleaned_input, instance)
         return cleaned_input
 
     @classmethod
-    def clean_sku(cls, product_type, cleaned_input):
-        """Validate SKU input field.
-
-        When creating products that don't use variants, SKU is required in
-        the input in order to create the default variant underneath.
-        See the documentation for `has_variants` field for details:
-        http://docs.getsaleor.com/en/latest/architecture/products.html#product-types
-        """
+    def clean_sku(cls, product_type, cleaned_input, instance):
         if product_type and not product_type.has_variants:
             input_sku = cleaned_input.get("sku")
-            if not input_sku:
+
+            if not input_sku and not instance.pk:
                 raise ValidationError({"sku": ValidationError("This field cannot be blank.")})
-            elif models.ProductVariant.objects.filter(sku=input_sku).exists():
+
+            if instance.pk:
+                exists = (
+                    (
+                        models.ProductVariant.objects.filter(sku=input_sku)
+                        .exclude(product_id=instance.pk)
+                        .exists()
+                    )
+                    if input_sku
+                    else False
+                )
+            else:
+                exists = models.ProductVariant.objects.filter(sku=input_sku).exists()
+
+            if exists:
                 raise ValidationError(
                     {"sku": ValidationError("Product with this SKU already exists.")}
+                )
+
+    @classmethod
+    def clean_single_variants(cls, product_type, cleaned_input):
+        if product_type and not product_type.has_variants:
+            weight = cleaned_input.get("weight")
+            if weight and weight < 0:
+                raise ValidationError(
+                    {"weight": ValidationError("Product can't have negative weight.")}
+                )
+
+            price = cleaned_input.get("price")
+            if price and price < 0:
+                raise ValidationError(
+                    {"price": ValidationError("Product price cannot be lower than 0.")}
+                )
+
+            cost = cleaned_input.get("cost")
+            if cost and cost < 0:
+                raise ValidationError(
+                    {"cost": ValidationError("Product cost cannot be lower than 0.")}
+                )
+
+            quantity = cleaned_input.get("quantity")
+            if quantity and quantity < 0:
+                raise ValidationError(
+                    {"quantity": ValidationError("Product quantity cannot be lower than 0.")}
                 )
 
     @classmethod
@@ -433,18 +449,6 @@ class ProductUpdate(ProductCreate):
         permissions = (ProductPermissions.MANAGE_PRODUCTS,)
 
     @classmethod
-    def clean_sku(cls, product_type, cleaned_input):
-        input_sku = cleaned_input.get("sku")
-        if (
-            not product_type.has_variants
-            and input_sku
-            and models.ProductVariant.objects.filter(sku=input_sku).exists()
-        ):
-            raise ValidationError(
-                {"sku": ValidationError("Product with this SKU already exists.")}
-            )
-
-    @classmethod
     @transaction.atomic
     def save(cls, info, instance, cleaned_input):
         instance.save()
@@ -461,13 +465,13 @@ class ProductUpdate(ProductCreate):
                 variant.sku = cleaned_input["sku"]
                 update_fields.append("sku")
             if "weight" in cleaned_input:
-                variant.sku = cleaned_input["weight"]
+                variant.weight = cleaned_input["weight"]
                 update_fields.append("weight")
             if "cost" in cleaned_input:
-                variant.sku = cleaned_input["cost"]
+                variant.cost = cleaned_input["cost"]
                 update_fields.append("cost")
             if "price" in cleaned_input:
-                variant.sku = cleaned_input["price"]
+                variant.price = cleaned_input["price"]
                 update_fields.append("price")
             if update_fields:
                 variant.save(update_fields=update_fields)
@@ -666,6 +670,8 @@ class ProductVariantCreate(ModelMutation):
         attributes = cleaned_input.get("attributes")
         if attributes:
             AttributeAssignmentMixin.save(instance, attributes)
+            instance.name = generate_name_for_variant(instance)
+            instance.save(update_fields=["name"])
 
 
 class ProductVariantUpdate(ProductVariantCreate):
@@ -917,7 +923,7 @@ class ProductImageCreate(BaseMutation):
         validate_image_file(image_data, "image")
 
         image = product.images.create(image=image_data, alt=data.get("alt", ""))
-        create_product_thumbnails.delay(image.pk)
+        transaction.on_commit(lambda: create_product_thumbnails.delay(image.pk))
         return ProductImageCreate(product=product, image=image)
 
 

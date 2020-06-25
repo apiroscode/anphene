@@ -1,4 +1,5 @@
 import graphene
+import graphene_django_optimizer as gql_optimizer
 from graphene import relay
 
 from core.graph.connection import CountableDjangoObjectType
@@ -54,6 +55,7 @@ class Category(CountableDjangoObjectType):
             )
 
     @staticmethod
+    @gql_optimizer.resolver_hints(prefetch_related="children")
     def resolve_children(root: models.Category, _info, **_kwargs):
         return root.children.all()
 

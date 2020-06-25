@@ -108,6 +108,15 @@ def get_product_availability(
     collections: Iterable[Collection],
     discounts: Iterable[DiscountInfo],
 ) -> ProductAvailability:
+
+    if len(variants) <= 0:
+        return ProductAvailability(
+            on_sale=False,
+            price_range=MoneyRange(start=0, stop=0),
+            price_range_undiscounted=MoneyRange(start=0, stop=0),
+            discount=0,
+        )
+
     discounted = get_product_price_range(
         product=product, variants=variants, collections=collections, discounts=discounts,
     )

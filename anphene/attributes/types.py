@@ -7,6 +7,7 @@ from graphene import relay
 from core.graph.connection import CountableDjangoObjectType
 from . import models
 from .enums import AttributeInputTypeEnum, AttributeValueType
+from ..products.dataloaders import AttributeValuesByAttributeIdLoader
 
 COLOR_PATTERN = r"^(#[0-9a-fA-F]{3}|#(?:[0-9a-fA-F]{2}){2,4}|(rgb|hsl)a?\((-?\d+%?[,\s]+){2,3}\s*[\d\.]+%?\))$"  # noqa
 color_pattern = re.compile(COLOR_PATTERN)
@@ -27,11 +28,8 @@ class Attribute(CountableDjangoObjectType):
         description="The input type to use for entering attribute values in the dashboard."
     )
 
-    values = gql_optimizer.field(
-        graphene.List(
-            "anphene.attributes.types.AttributeValue", description="List of attribute's values."
-        ),
-        model_field="values",
+    values = graphene.List(
+        "anphene.attributes.types.AttributeValue", description="List of attribute's values."
     )
 
     class Meta:
@@ -56,8 +54,8 @@ class Attribute(CountableDjangoObjectType):
         model = models.Attribute
 
     @staticmethod
-    def resolve_values(root: models.Attribute, *_args):
-        return root.values.all()
+    def resolve_values(root: models.Attribute, info):
+        return AttributeValuesByAttributeIdLoader(info.context).load(root.id)
 
 
 class AttributeValue(CountableDjangoObjectType):

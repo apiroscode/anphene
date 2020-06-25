@@ -18,6 +18,7 @@ from ...attributes.enums import AttributeTypeEnum
 from ...attributes.mutations import ReorderInput
 from ...attributes.types import Attribute
 from ...core.permissions import ProductPermissions
+from ..tasks import update_variants_names
 
 
 class ProductTypeInput(graphene.InputObjectType):
@@ -75,6 +76,15 @@ class ProductTypeUpdate(ProductTypeCreate):
         description = "Updates an existing product type."
         model = models.ProductType
         permissions = (ProductPermissions.MANAGE_PRODUCT_TYPES,)
+
+    @classmethod
+    def save(cls, info, instance, cleaned_input):
+        variant_attr = cleaned_input.get("variant_attributes")
+        if variant_attr:
+            variant_attr = set(variant_attr)
+            variant_attr_ids = [attr.pk for attr in variant_attr]
+            update_variants_names.delay(instance.pk, variant_attr_ids)
+        super().save(info, instance, cleaned_input)
 
 
 class ProductTypeDelete(ModelDeleteMutation):

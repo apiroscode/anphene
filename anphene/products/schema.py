@@ -31,6 +31,7 @@ from .mutations.products import (
     VariantImageAssign,
     VariantImageUnassign,
 )
+from .mutations.sku import GenerateSKU
 from .resolvers import resolve_product_types, resolve_product_variants, resolve_products
 from .sorters import ProductSortingInput, ProductTypeSortingInput
 from .types.product_types import ProductType
@@ -125,3 +126,6 @@ class ProductMutations(graphene.ObjectType):
     product_image_delete = ProductImageDelete.Field()
     product_image_bulk_delete = ProductImageBulkDelete.Field()
     product_image_reorder = ProductImageReorder.Field()
+
+    # SKU GENERATOR
+    product_get_sku = GenerateSKU.Field()

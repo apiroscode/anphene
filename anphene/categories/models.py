@@ -1,6 +1,5 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from versatileimagefield.fields import VersatileImageField
 
@@ -22,9 +21,6 @@ class Category(MPTTModel, SeoModel):
         null=True,
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
-
-    objects = models.Manager()
-    tree = TreeManager()
 
     class Meta:
         permissions = ((CategoryPermissions.MANAGE_CATEGORIES.codename, "Manage categories"),)

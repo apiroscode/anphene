@@ -24,6 +24,18 @@ if TYPE_CHECKING:
     from ...attributes.models import AttributeProduct, AttributeVariant
 
 
+def generate_name_for_variant(variant: ProductVariant) -> str:
+    """Generate ProductVariant's name based on its attributes."""
+    attributes_display = []
+
+    for attribute_rel in variant.attributes.all():  # type: AssignedVariantAttribute
+        values_qs = attribute_rel.values.all()  # FIXME: this should be sorted
+        values = [str(value.name) for value in values_qs]
+        attributes_display.append(", ".join(values))
+
+    return " / ".join(attributes_display)
+
+
 def _associate_attribute_to_instance(
     instance: Union[Product, ProductVariant], attribute_pk: int
 ) -> AttributeAssignmentType:

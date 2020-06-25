@@ -180,6 +180,7 @@ class Product(CountableDjangoObjectType):
         return ProductVariantsByProductIdLoader(info.context).load(root.id)
 
     @staticmethod
+    @gql_optimizer.resolver_hints(prefetch_related="collections")
     def resolve_collections(root: models.Product, *_args):
         return root.collections.all()
 
@@ -224,6 +225,7 @@ class ProductVariant(CountableDjangoObjectType):
             "id",
             "product",
             "sku",
+            "name",
             "track_inventory",
             "weight",
             "cost",
@@ -260,6 +262,10 @@ class ProductVariant(CountableDjangoObjectType):
             .load(info.context.request_time)
             .then(calculate_pricing_info)
         )
+
+    @staticmethod
+    def resolve_product(root: models.ProductVariant, info):
+        return ProductByIdLoader(info.context).load(root.product_id)
 
     @staticmethod
     def resolve_attributes(root: models.ProductVariant, info):

@@ -150,7 +150,7 @@ class AssignedVariantAttribute(models.Model):
     assignment = models.ForeignKey(
         "AttributeVariant", on_delete=models.CASCADE, related_name="variantassignments"
     )
-    value = models.ForeignKey("AttributeValue", on_delete=models.CASCADE)
+    values = models.ManyToManyField("AttributeValue")
 
     class Meta:
         unique_together = (("variant", "assignment"),)

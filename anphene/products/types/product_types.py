@@ -1,5 +1,6 @@
 import graphene
 import graphene_django_optimizer as gql_optimizer
+from django.db.models import Prefetch
 from graphene import relay
 
 from core.decorators import permission_required
@@ -33,14 +34,28 @@ class ProductType(CountableDjangoObjectType):
         only_fields = ["id", "name", "has_variants"]
 
     @staticmethod
-    @gql_optimizer.resolver_hints(prefetch_related="product_attributes__attributeproduct")
+    @gql_optimizer.resolver_hints(
+        prefetch_related=lambda info: Prefetch(
+            "product_attributes",
+            queryset=attributes_models.Attribute.objects.prefetch_related(
+                "attributeproduct"
+            ).order_by("attributeproduct__sort_order"),
+        )
+    )
     def resolve_product_attributes(root: models.ProductType, *_args, **_kwargs):
-        return root.product_attributes.product_attributes_sorted().all()
+        return root.product_attributes.all()
 
     @staticmethod
-    @gql_optimizer.resolver_hints(prefetch_related="variant_attributes__attributevariant")
+    @gql_optimizer.resolver_hints(
+        prefetch_related=lambda info: Prefetch(
+            "variant_attributes",
+            queryset=attributes_models.Attribute.objects.prefetch_related(
+                "attributevariant"
+            ).order_by("attributevariant__sort_order"),
+        )
+    )
     def resolve_variant_attributes(root: models.ProductType, *_args, **_kwargs):
-        return root.variant_attributes.variant_attributes_sorted().all()
+        return root.variant_attributes.all()
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCT_TYPES)
