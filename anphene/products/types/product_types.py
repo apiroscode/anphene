@@ -42,8 +42,14 @@ class ProductType(CountableDjangoObjectType):
             ).order_by("attributeproduct__sort_order"),
         )
     )
-    def resolve_product_attributes(root: models.ProductType, *_args, **_kwargs):
-        return root.product_attributes.all()
+    def resolve_product_attributes(root: models.ProductType, info, **_kwargs):
+        product_type_id = info.variable_values.get("id", None) or info.variable_values.get(
+            "productTypeId", None
+        )
+        if product_type_id:
+            return root.product_attributes.product_attributes_sorted().all()
+        else:
+            return root.product_attributes.all()
 
     @staticmethod
     @gql_optimizer.resolver_hints(
@@ -54,8 +60,15 @@ class ProductType(CountableDjangoObjectType):
             ).order_by("attributevariant__sort_order"),
         )
     )
-    def resolve_variant_attributes(root: models.ProductType, *_args, **_kwargs):
-        return root.variant_attributes.all()
+    def resolve_variant_attributes(root: models.ProductType, info, **_kwargs):
+        # FIXME: NEED TO RESOLVE BETTER THAN THIS
+        product_type_id = info.variable_values.get("id", None) or info.variable_values.get(
+            "productTypeId", None
+        )
+        if product_type_id:
+            return root.variant_attributes.variant_attributes_sorted().all()
+        else:
+            return root.variant_attributes.all()
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCT_TYPES)

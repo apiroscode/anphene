@@ -21,6 +21,7 @@ from ..dataloaders import (
     SelectedAttributesByProductVariantIdLoader,
 )
 from ..utils.availability import get_product_availability, get_variant_availability
+from ..utils.sku import generate_sku
 from ...attributes.types import SelectedAttribute
 from ...collections.types import Collection
 from ...core.permissions import ProductPermissions
@@ -90,6 +91,8 @@ class Product(CountableDjangoObjectType):
     collections = graphene.List(
         lambda: Collection, description="List of collections for the product."
     )
+
+    get_unique_sku = graphene.String(description="Only used in variants generator.")
 
     class Meta:
         description = "Represents an individual item for sale in the storefront."
@@ -183,6 +186,10 @@ class Product(CountableDjangoObjectType):
     @gql_optimizer.resolver_hints(prefetch_related="collections")
     def resolve_collections(root: models.Product, *_args):
         return root.collections.all()
+
+    @staticmethod
+    def resolve_get_unique_sku(root: models.Product, *_args, **_kwargs):
+        return generate_sku(root.name)
 
 
 class ProductVariant(CountableDjangoObjectType):

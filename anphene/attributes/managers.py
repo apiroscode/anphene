@@ -46,7 +46,6 @@ class AttributeQuerySet(BaseAttributeQuerySet):
         else:
             sort_method = sort_order_field.desc(nulls_first=True)
             id_sort = id_field.desc()
-        print(sort_method, id_sort)
         return self.order_by(sort_method, id_sort)
 
     def product_attributes_sorted(self, asc=True):
