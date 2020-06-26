@@ -720,12 +720,21 @@ class ProductVariantBulkCreateInput(ProductVariantInput):
         description="List of attributes specific to this variant.",
     )
     sku = graphene.String(required=True, description="Stock keeping unit.")
+    weight = graphene.Int(description="Weight of the Product.")
+    cost = graphene.Int(description="Product cost.")
+    price = graphene.Int(description="Product price.")
+    quantity = graphene.Int(
+        description="""The total quantity of a product available for
+        sale. Note: this field is only used if a product doesn't
+        use variants."""
+    )
 
 
 class ProductVariantBulkCreate(BaseMutation):
     count = graphene.Int(
         required=True, default_value=0, description="Returns how many objects were created.",
     )
+    product = graphene.Field(Product, description="Product of the created variants.")
     product_variants = graphene.List(
         graphene.NonNull(ProductVariant),
         required=True,
@@ -757,26 +766,26 @@ class ProductVariantBulkCreate(BaseMutation):
             info, instance, data, input_cls=ProductVariantBulkCreateInput
         )
 
-        weight = cleaned_input.get("weight", 0)
-        if weight <= 0:
-            errors["weight"] = ValidationError(
-                "Product can't have negative weight.", params={"index": variant_index},
+        weight = cleaned_input.get("weight")
+        if weight and weight < 0:
+            raise ValidationError(
+                {"weight": ValidationError("Product can't have negative weight.")}
             )
 
         price = cleaned_input.get("price")
-        if price and price <= 0:
-            errors["weight"] = ValidationError(
-                "Product price cannot be lower than 0.", params={"index": variant_index},
+        if price and price < 0:
+            raise ValidationError(
+                {"price": ValidationError("Product price cannot be lower than 0.")}
             )
 
         cost = cleaned_input.get("cost")
         if cost and cost < 0:
-            errors["cost"] = ValidationError(
-                "Product cost cannot be lower than 0.", params={"index": variant_index},
+            raise ValidationError(
+                {"cost": ValidationError("Product cost cannot be lower than 0.")}
             )
 
         quantity = cleaned_input.get("quantity")
-        if quantity and quantity <= 0:
+        if quantity and quantity < 0:
             raise ValidationError(
                 {"quantity": ValidationError("Product quantity cannot be lower than 0.")}
             )
@@ -811,6 +820,8 @@ class ProductVariantBulkCreate(BaseMutation):
         attributes = cleaned_input.get("attributes")
         if attributes:
             AttributeAssignmentMixin.save(instance, attributes)
+            instance.name = generate_name_for_variant(instance)
+            instance.save(update_fields=["name"])
 
     @classmethod
     def create_variants(cls, info, cleaned_inputs, product, errors):
@@ -877,7 +888,9 @@ class ProductVariantBulkCreate(BaseMutation):
             raise ValidationError(errors)
         cls.save_variants(info, instances, cleaned_inputs)
 
-        return ProductVariantBulkCreate(count=len(instances), product_variants=instances)
+        return ProductVariantBulkCreate(
+            count=len(instances), product_variants=instances, product=product
+        )
 
 
 class ProductVariantBulkDelete(ModelBulkDeleteMutation):
