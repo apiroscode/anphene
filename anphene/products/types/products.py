@@ -16,6 +16,7 @@ from ..dataloaders import (
     CollectionsByProductIdLoader,
     ImagesByProductIdLoader,
     ProductByIdLoader,
+    ImagesByProductVariantIdLoader,
     ProductVariantsByProductIdLoader,
     SelectedAttributesByProductIdLoader,
     SelectedAttributesByProductVariantIdLoader,
@@ -296,8 +297,8 @@ class ProductVariant(CountableDjangoObjectType):
         return getattr(root, "quantity_ordered", None)
 
     @staticmethod
-    def resolve_images(root: models.ProductVariant, *_args):
-        return root.images.all()
+    def resolve_images(root: models.ProductVariant, info, *_kwargs):
+        return ImagesByProductVariantIdLoader(info.context).load(root.id)
 
     @classmethod
     def get_node(cls, info, pk):

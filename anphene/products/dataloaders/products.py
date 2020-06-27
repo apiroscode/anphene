@@ -1,11 +1,7 @@
 from collections import defaultdict
 
 from core.graph.dataloader import DataLoader
-from ..models import (
-    Product,
-    ProductImage,
-    ProductVariant,
-)
+from ..models import Product, ProductImage, ProductVariant, VariantImage
 from ...categories.models import Category
 from ...collections.models import Collection, CollectionProduct
 from ...core.permissions import ProductPermissions
@@ -38,6 +34,37 @@ class ImagesByProductIdLoader(DataLoader):
         for image in images:
             image_map[image.product_id].append(image)
         return [image_map[product_id] for product_id in keys]
+
+
+class ImageByIdLoader(DataLoader):
+    context_key = "image_by_id"
+
+    def batch_load(self, keys):
+        images = ProductImage.objects.in_bulk(keys)
+        return [images.get(image_id) for image_id in keys]
+
+
+class ImagesByProductVariantIdLoader(DataLoader):
+    context_key = "images_by_product_variant"
+
+    def batch_load(self, keys):
+        variant_image_pairs = list(
+            VariantImage.objects.filter(variant_id__in=keys).values_list("variant_id", "image_id")
+        )
+        variant_image_map = defaultdict(list)
+
+        for pid, cid in variant_image_pairs:
+            variant_image_map[pid].append(cid)
+
+        def map_images(images):
+            images_map = {c.id: c for c in images}
+            return [[images_map[cid] for cid in variant_image_map[pid]] for pid in keys]
+
+        return (
+            ImageByIdLoader(self.context)
+            .load_many(set(cid for pid, cid in variant_image_pairs))
+            .then(map_images)
+        )
 
 
 class ProductVariantByIdLoader(DataLoader):
