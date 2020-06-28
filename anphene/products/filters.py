@@ -63,7 +63,7 @@ def filter_has_category(qs, _, value):
     return qs.filter(category__isnull=not value)
 
 
-def filter_products_by_relation(qs, sales, field):
+def filter_by_include_ids(qs, sales, field):
     return qs.filter(**{f"{field}__in": sales})
 
 
@@ -72,28 +72,28 @@ def filter_categories(qs, _, value):
         categories = get_nodes(value, categories_types.Category)
         categories = [category.get_descendants(include_self=True) for category in categories]
         ids = {category.id for tree in categories for category in tree}
-        qs = filter_products_by_relation(qs, ids, "category")
+        qs = filter_by_include_ids(qs, ids, "category")
     return qs
 
 
 def filter_collections(qs, _, value):
     if value:
         collections = get_nodes(value, collections_types.Collection)
-        qs = filter_products_by_relation(qs, collections, "collections")
+        qs = filter_by_include_ids(qs, collections, "collections")
     return qs
 
 
 def filter_sales(qs, _, value):
     if value:
         collections = get_nodes(value, discount_types.Sale)
-        qs = filter_products_by_relation(qs, collections, "sale")
+        qs = filter_by_include_ids(qs, collections, "sale")
     return qs
 
 
 def filter_vouchers(qs, _, value):
     if value:
         collections = get_nodes(value, discount_types.Voucher)
-        qs = filter_products_by_relation(qs, collections, "voucher")
+        qs = filter_by_include_ids(qs, collections, "voucher")
     return qs
 
 
@@ -172,6 +172,17 @@ def filter_stock_availability(qs, _, value):
     return qs
 
 
+def filter_by_exclude_ids(qs, ids, field):
+    return qs.exclude(**{f"{field}__in": ids})
+
+
+def filter_not_in_collections(qs, _, value):
+    if value:
+        collections = get_nodes(value, collections_types.Collection)
+        qs = filter_by_exclude_ids(qs, collections, "collections")
+    return qs
+
+
 class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
     collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
@@ -185,6 +196,9 @@ class ProductFilter(django_filters.FilterSet):
     )
     product_types = GlobalIDMultipleChoiceFilter(field_name="product_type")
     search = django_filters.CharFilter(method=filter_search)
+
+    # filter for not in, used in collections, vouchers, and sales
+    not_in_collections = GlobalIDMultipleChoiceFilter(method=filter_not_in_collections)
 
     class Meta:
         model = Product

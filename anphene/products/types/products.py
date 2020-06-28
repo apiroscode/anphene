@@ -190,7 +190,7 @@ class Product(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_get_unique_sku(root: models.Product, *_args, **_kwargs):
-        return generate_sku(root.name)
+        return generate_sku(root.name, root.id)
 
 
 class ProductVariant(CountableDjangoObjectType):
