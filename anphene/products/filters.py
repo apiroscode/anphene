@@ -10,14 +10,24 @@ from core.graph.filters import EnumFilter, ListObjectTypeFilter, ObjectTypeFilte
 from core.graph.types import FilterInputObjectType
 from core.graph.types.common import PriceRangeInput
 from core.graph.utils import get_nodes
-from core.utils.filters import filter_fields_containing_value, filter_range_field
+from core.utils.filters import (
+    filter_by_exclude_ids,
+    filter_by_include_ids,
+    filter_fields_containing_value,
+    filter_range_field,
+)
 from .enums import ProductTypeConfigurable, StockAvailability
 from .models import Product, ProductType, ProductVariant
 from ..attributes.models import Attribute
 from ..attributes.types import AttributeInput
 from ..categories import types as categories_types
 from ..collections import types as collections_types
-from ..discounts import types as discount_types
+from ..core.filters import (
+    filter_not_in_sales,
+    filter_not_in_vouchers,
+    filter_sales,
+    filter_vouchers,
+)
 from ..search.backends import picker
 
 
@@ -52,49 +62,8 @@ class ProductTypeFilterInput(FilterInputObjectType):
 
 # PRODUCT
 # =======
-def filter_search(qs, _, value):
-    if value:
-        search = picker.pick_backend()
-        qs &= search(value).distinct()
-    return qs
-
-
 def filter_has_category(qs, _, value):
     return qs.filter(category__isnull=not value)
-
-
-def filter_by_include_ids(qs, sales, field):
-    return qs.filter(**{f"{field}__in": sales})
-
-
-def filter_categories(qs, _, value):
-    if value:
-        categories = get_nodes(value, categories_types.Category)
-        categories = [category.get_descendants(include_self=True) for category in categories]
-        ids = {category.id for tree in categories for category in tree}
-        qs = filter_by_include_ids(qs, ids, "category")
-    return qs
-
-
-def filter_collections(qs, _, value):
-    if value:
-        collections = get_nodes(value, collections_types.Collection)
-        qs = filter_by_include_ids(qs, collections, "collections")
-    return qs
-
-
-def filter_sales(qs, _, value):
-    if value:
-        collections = get_nodes(value, discount_types.Sale)
-        qs = filter_by_include_ids(qs, collections, "sale")
-    return qs
-
-
-def filter_vouchers(qs, _, value):
-    if value:
-        collections = get_nodes(value, discount_types.Voucher)
-        qs = filter_by_include_ids(qs, collections, "voucher")
-    return qs
 
 
 def filter_price(qs, _, value):
@@ -172,8 +141,27 @@ def filter_stock_availability(qs, _, value):
     return qs
 
 
-def filter_by_exclude_ids(qs, ids, field):
-    return qs.exclude(**{f"{field}__in": ids})
+def filter_search(qs, _, value):
+    if value:
+        search = picker.pick_backend()
+        qs &= search(value).distinct()
+    return qs
+
+
+def filter_categories(qs, _, value):
+    if value:
+        categories = get_nodes(value, categories_types.Category)
+        categories = [category.get_descendants(include_self=True) for category in categories]
+        ids = {category.id for tree in categories for category in tree}
+        qs = filter_by_include_ids(qs, ids, "category")
+    return qs
+
+
+def filter_collections(qs, _, value):
+    if value:
+        collections = get_nodes(value, collections_types.Collection)
+        qs = filter_by_include_ids(qs, collections, "collections")
+    return qs
 
 
 def filter_not_in_collections(qs, _, value):
@@ -185,9 +173,6 @@ def filter_not_in_collections(qs, _, value):
 
 class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
-    collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
-    categories = GlobalIDMultipleChoiceFilter(method=filter_categories)
-
     has_category = django_filters.BooleanFilter(method=filter_has_category)
     price = ObjectTypeFilter(input_class=PriceRangeInput, method=filter_price)
     attributes = ListObjectTypeFilter(input_class=AttributeInput, method=filter_attributes)
@@ -195,10 +180,23 @@ class ProductFilter(django_filters.FilterSet):
         input_class=StockAvailability, method=filter_stock_availability
     )
     product_types = GlobalIDMultipleChoiceFilter(field_name="product_type")
+
     search = django_filters.CharFilter(method=filter_search)
 
-    # filter for not in, used in collections, vouchers, and sales
+    # used in categories
+    categories = GlobalIDMultipleChoiceFilter(method=filter_categories)
+
+    # used in collections
+    collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
     not_in_collections = GlobalIDMultipleChoiceFilter(method=filter_not_in_collections)
+
+    # used in sales
+    sales = GlobalIDMultipleChoiceFilter(method=filter_sales)
+    not_in_sales = GlobalIDMultipleChoiceFilter(method=filter_not_in_sales)
+
+    # used in vouchers
+    vouchers = GlobalIDMultipleChoiceFilter(method=filter_vouchers)
+    not_in_vouchers = GlobalIDMultipleChoiceFilter(method=filter_not_in_vouchers)
 
     class Meta:
         model = Product

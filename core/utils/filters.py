@@ -58,3 +58,11 @@ def filter_range_field(qs, field, value):
         lookup = {f"{field}__lte": lte}
         qs = qs.filter(**lookup)
     return qs
+
+
+def filter_by_include_ids(qs, ids, field):
+    return qs.filter(**{f"{field}__in": ids})
+
+
+def filter_by_exclude_ids(qs, ids, field):
+    return qs.exclude(**{f"{field}__in": ids})

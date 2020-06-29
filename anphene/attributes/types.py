@@ -1,7 +1,6 @@
 import re
 
 import graphene
-import graphene_django_optimizer as gql_optimizer
 from graphene import relay
 
 from core.graph.connection import CountableDjangoObjectType

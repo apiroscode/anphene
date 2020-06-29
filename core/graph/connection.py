@@ -45,7 +45,7 @@ class CountableConnection(NonNullConnection):
     def resolve_total_count(root, *_args, **_kwargs):
         if isinstance(root.iterable, list):
             return len(root.iterable)
-        return root.iterable.count()
+        return root.length
 
 
 class CountableDjangoObjectType(DjangoObjectType):

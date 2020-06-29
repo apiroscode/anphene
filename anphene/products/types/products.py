@@ -15,8 +15,8 @@ from .. import models
 from ..dataloaders import (
     CollectionsByProductIdLoader,
     ImagesByProductIdLoader,
-    ProductByIdLoader,
     ImagesByProductVariantIdLoader,
+    ProductByIdLoader,
     ProductVariantsByProductIdLoader,
     SelectedAttributesByProductIdLoader,
     SelectedAttributesByProductVariantIdLoader,

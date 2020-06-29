@@ -12,13 +12,13 @@ from core.graph.mutations import (
 from core.graph.utils import from_global_id_strict_type
 from core.graph.utils.reordering import perform_reordering
 from .. import models
+from ..tasks import update_variants_names
 from ..types.product_types import ProductType
 from ...attributes import AttributeInputType, models as attributes_models
 from ...attributes.enums import AttributeTypeEnum
 from ...attributes.mutations import ReorderInput
 from ...attributes.types import Attribute
 from ...core.permissions import ProductPermissions
-from ..tasks import update_variants_names
 
 
 class ProductTypeInput(graphene.InputObjectType):
