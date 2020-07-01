@@ -9,8 +9,7 @@ from ..core.permissions import PagePermissions
 class Page(SeoModel, PublishableModel):
     slug = models.SlugField(unique=True, max_length=255)
     title = models.CharField(max_length=250)
-    content = models.TextField(blank=True)
-    content_json = SanitizedJSONField(blank=True, default=dict, sanitizer=clean_draft_js)
+    content = SanitizedJSONField(blank=True, default=dict, sanitizer=clean_draft_js)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,5 +1,5 @@
 from .models import Supplier
 
 
-def resolve_suppliers(info, **_kwargs):
+def resolve_suppliers(_info, **_kwargs):
     return Supplier.objects.all()

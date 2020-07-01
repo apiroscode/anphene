@@ -55,7 +55,6 @@ class Reordering:
 
             previous_sort_order += 1
             ordering_map[pk] = previous_sort_order
-
         return ordering_map
 
     def calculate_new_sort_order(self, pk, move) -> Tuple[int, int, int]:
@@ -85,6 +84,7 @@ class Reordering:
         return node_pos, target_pos, target_position
 
     def process_move_operation(self, pk, move):
+        print(pk, move)
         old_sort_order = self.ordered_node_map[pk]
 
         # Skip if noting to do

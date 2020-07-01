@@ -4,6 +4,8 @@ from ..attributes.schema import AttributeMutations, AttributeQueries
 from ..categories.schema import CategoryMutations, CategoryQueries
 from ..collections.schema import CollectionMutations, CollectionQueries
 from ..discounts.schema import DiscountMutations, DiscountQueries
+from ..menus.schema import MenuMutations, MenuQueries
+from ..pages.schema import PageMutations, PageQueries
 from ..products.schema import ProductMutations, ProductQueries
 from ..regions.schema import RegionQueries
 from ..suppliers.schema import SupplierMutations, SupplierQueries
@@ -15,6 +17,8 @@ class Query(
     CategoryQueries,
     CollectionQueries,
     DiscountQueries,
+    MenuQueries,
+    PageQueries,
     ProductQueries,
     RegionQueries,
     SupplierQueries,
@@ -28,6 +32,8 @@ class Mutation(
     CategoryMutations,
     CollectionMutations,
     DiscountMutations,
+    MenuMutations,
+    PageMutations,
     ProductMutations,
     SupplierMutations,
     UserMutations,

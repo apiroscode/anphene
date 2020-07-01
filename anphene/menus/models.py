@@ -38,10 +38,9 @@ class MenuItem(MPTTModel, SortableModel):
 
     class Meta:
         ordering = ("sort_order",)
-        app_label = "menu"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}-{self.id}"
 
     def get_ordering_queryset(self):
         return self.menu.items.all() if not self.parent else self.parent.children.all()
