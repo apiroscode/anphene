@@ -4,13 +4,15 @@ from core.graph.fields import FilterInputConnectionField
 from core.graph.utils import get_node_or_slug
 from .filters import CollectionFilterInput
 from .mutations import (
+    CollectionCreate,
+    CollectionDelete,
+    CollectionUpdate,
+)
+from .mutations_bulk import (
     CollectionAddProducts,
     CollectionBulkDelete,
     CollectionBulkPublish,
-    CollectionCreate,
-    CollectionDelete,
     CollectionRemoveProducts,
-    CollectionUpdate,
 )
 from .resolvers import resolve_collections
 from .sorters import CollectionSortingInput

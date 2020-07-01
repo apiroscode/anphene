@@ -5,7 +5,6 @@ from django.db.models import Q
 
 from core.graph.mutations import (
     BaseMutation,
-    ModelBulkDeleteMutation,
     ModelDeleteMutation,
     ModelMutation,
 )
@@ -93,18 +92,6 @@ class ProductTypeDelete(ModelDeleteMutation):
 
     class Meta:
         description = "Deletes a product type."
-        model = models.ProductType
-        permissions = (ProductPermissions.MANAGE_PRODUCT_TYPES,)
-
-
-class ProductTypeBulkDelete(ModelBulkDeleteMutation):
-    class Arguments:
-        ids = graphene.List(
-            graphene.ID, required=True, description="List of product type IDs to delete."
-        )
-
-    class Meta:
-        description = "Deletes product types."
         model = models.ProductType
         permissions = (ProductPermissions.MANAGE_PRODUCT_TYPES,)
 

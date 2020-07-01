@@ -2,7 +2,8 @@ import graphene
 
 from core.graph.fields import FilterInputConnectionField
 from .filters import SupplierFilterInput
-from .mutations import SupplierBulkDelete, SupplierCreate, SupplierDelete, SupplierUpdate
+from .mutations import SupplierCreate, SupplierDelete, SupplierUpdate
+from .mutations_bulk import SupplierBulkDelete
 from .resolvers import resolve_suppliers
 from .sorters import SupplierSortingInput
 from .types import Supplier

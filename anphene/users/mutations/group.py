@@ -1,7 +1,6 @@
 import graphene
 from django.contrib.auth import models as auth_models
 
-from anphene.core.permissions import get_permissions, GroupPermissions, UserPermissions
 from core.graph.enums import PermissionEnum
 from core.graph.mutations import (
     BaseMutation,
@@ -12,6 +11,7 @@ from core.graph.mutations import (
 from core.graph.utils import from_global_id_strict_type
 from .. import models
 from ..types import Group, User
+from ...core.permissions import get_permissions, GroupPermissions, UserPermissions
 
 
 class GroupInput(graphene.InputObjectType):

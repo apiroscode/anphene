@@ -9,10 +9,10 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumber, PhoneNumberField
 
-from anphene.core.permissions import GroupPermissions, UserPermissions
-from anphene.regions.models import SubDistrict
 from . import CustomerEvents
 from .validators import validate_possible_number
+from ..core.permissions import GroupPermissions, UserPermissions
+from ..regions.models import SubDistrict
 
 
 class PossiblePhoneNumberField(PhoneNumberField):

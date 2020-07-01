@@ -1,5 +1,5 @@
-from .models import Page
 from core.graph.dataloader import DataLoader
+from .models import Page
 from ..core.permissions import PagePermissions
 
 

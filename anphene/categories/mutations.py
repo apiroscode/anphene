@@ -2,7 +2,7 @@ import graphene
 from django.core.exceptions import ValidationError
 
 from core.exceptions import PermissionDenied
-from core.graph.mutations import ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
+from core.graph.mutations import ModelDeleteMutation, ModelMutation
 from core.graph.types import SeoInput, Upload
 from core.graph.utils import clean_seo_fields
 from core.utils import validate_slug_and_generate_if_needed
@@ -101,19 +101,3 @@ class CategoryDelete(ModelDeleteMutation):
 
         instance.id = db_id
         return cls.success_response(instance)
-
-
-class CategoryBulkDelete(ModelBulkDeleteMutation):
-    class Arguments:
-        ids = graphene.List(
-            graphene.ID, required=True, description="List of category IDs to delete."
-        )
-
-    class Meta:
-        description = "Deletes categories."
-        model = models.Category
-        permissions = (CategoryPermissions.MANAGE_CATEGORIES,)
-
-    @classmethod
-    def bulk_action(cls, queryset):
-        delete_categories(queryset.values_list("pk", flat=True))

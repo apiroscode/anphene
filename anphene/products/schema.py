@@ -6,25 +6,19 @@ from .filters import ProductFilterInput, ProductTypeFilterInput
 from .mutations.product_types import (
     AttributeAssign,
     AttributeUnassign,
-    ProductTypeBulkDelete,
     ProductTypeCreate,
     ProductTypeDelete,
     ProductTypeReorderAttributes,
     ProductTypeUpdate,
 )
 from .mutations.products import (
-    ProductBulkDelete,
-    ProductBulkPublish,
     ProductCreate,
     ProductDelete,
-    ProductImageBulkDelete,
     ProductImageCreate,
     ProductImageDelete,
     ProductImageReorder,
     ProductImageUpdate,
     ProductUpdate,
-    ProductVariantBulkCreate,
-    ProductVariantBulkDelete,
     ProductVariantCreate,
     ProductVariantDelete,
     ProductVariantUpdate,
@@ -32,6 +26,14 @@ from .mutations.products import (
     VariantImageUnassign,
 )
 from .mutations.sku import GenerateSKU
+from .mutations_bulk.product_types import ProductTypeBulkDelete
+from .mutations_bulk.products import (
+    ProductBulkDelete,
+    ProductBulkPublish,
+    ProductImageBulkDelete,
+    ProductVariantBulkCreate,
+    ProductVariantBulkDelete,
+)
 from .resolvers import resolve_product_types, resolve_product_variants, resolve_products
 from .sorters import ProductSortingInput, ProductTypeSortingInput
 from .types.product_types import ProductType

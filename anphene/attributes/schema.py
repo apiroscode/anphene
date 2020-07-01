@@ -3,7 +3,6 @@ import graphene
 from core.graph.fields import FilterInputConnectionField
 from .filters import AttributeFilterInput
 from .mutations import (
-    AttributeBulkDelete,
     AttributeCreate,
     AttributeDelete,
     AttributeReorderValues,
@@ -12,6 +11,7 @@ from .mutations import (
     AttributeValueDelete,
     AttributeValueUpdate,
 )
+from .mutations_bulk import AttributeBulkDelete
 from .resolvers import resolve_attributes
 from .sorters import AttributeSortingInput
 from .types import Attribute

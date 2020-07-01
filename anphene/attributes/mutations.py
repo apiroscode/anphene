@@ -5,7 +5,6 @@ from django.template.defaultfilters import slugify
 
 from core.graph.mutations import (
     BaseMutation,
-    ModelBulkDeleteMutation,
     ModelDeleteMutation,
     ModelMutation,
 )
@@ -177,18 +176,6 @@ class AttributeDelete(ModelDeleteMutation):
     class Meta:
         model = models.Attribute
         description = "Deletes an attribute."
-        permissions = (AttributePermissions.MANAGE_ATTRIBUTES,)
-
-
-class AttributeBulkDelete(ModelBulkDeleteMutation):
-    class Arguments:
-        ids = graphene.List(
-            graphene.ID, required=True, description="List of attribute IDs to delete."
-        )
-
-    class Meta:
-        description = "Deletes attributes."
-        model = models.Attribute
         permissions = (AttributePermissions.MANAGE_ATTRIBUTES,)
 
 

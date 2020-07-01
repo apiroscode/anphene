@@ -1,6 +1,6 @@
 import graphene
 
-from core.graph.mutations import ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
+from core.graph.mutations import ModelDeleteMutation, ModelMutation
 from . import models
 from ..core.permissions import SupplierPermissions
 
@@ -39,17 +39,5 @@ class SupplierDelete(ModelDeleteMutation):
 
     class Meta:
         description = "Deletes a supplier."
-        model = models.Supplier
-        permissions = (SupplierPermissions.MANAGE_SUPPLIERS,)
-
-
-class SupplierBulkDelete(ModelBulkDeleteMutation):
-    class Arguments:
-        ids = graphene.List(
-            graphene.ID, required=True, description="List of supplier IDs to delete."
-        )
-
-    class Meta:
-        description = "Deletes a suppliers."
         model = models.Supplier
         permissions = (SupplierPermissions.MANAGE_SUPPLIERS,)

@@ -3,7 +3,8 @@ import graphene
 from core.graph.fields import FilterInputConnectionField
 from core.graph.utils import get_node_or_slug
 from .filters import PageFilterInput
-from .mutations import PageBulkDelete, PageBulkPublish, PageCreate, PageDelete, PageUpdate
+from .mutations import PageCreate, PageDelete, PageUpdate
+from .mutations_bulk import PageBulkDelete, PageBulkPublish
 from .resolvers import resolve_pages
 from .sorters import PageSortingInput
 from .types import Page

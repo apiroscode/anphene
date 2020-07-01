@@ -3,7 +3,8 @@ import graphene
 from core.graph.fields import FilterInputConnectionField
 from core.graph.utils import get_node_or_slug
 from .filters import CategoryFilterInput
-from .mutations import CategoryBulkDelete, CategoryCreate, CategoryDelete, CategoryUpdate
+from .mutations import CategoryCreate, CategoryDelete, CategoryUpdate
+from .mutations_bulk import CategoryBulkDelete
 from .resolvers import resolve_categories
 from .sorters import CategorySortingInput
 from .types import Category

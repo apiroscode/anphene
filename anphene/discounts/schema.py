@@ -4,18 +4,20 @@ from core.decorators import permission_required
 from core.graph.fields import FilterInputConnectionField
 from .filters import SaleFilterInput, VoucherFilterInput
 from .mutations import (
-    SaleAddCatalogues,
-    SaleBulkDelete,
     SaleCreate,
     SaleDelete,
-    SaleRemoveCatalogues,
     SaleUpdate,
-    VoucherAddCatalogues,
-    VoucherBulkDelete,
     VoucherCreate,
     VoucherDelete,
-    VoucherRemoveCatalogues,
     VoucherUpdate,
+)
+from .mutations_bulk import (
+    SaleAddCatalogues,
+    SaleBulkDelete,
+    SaleRemoveCatalogues,
+    VoucherAddCatalogues,
+    VoucherBulkDelete,
+    VoucherRemoveCatalogues,
 )
 from .resolvers import resolve_sales, resolve_vouchers
 from .sorters import SaleSortingInput, VoucherSortingInput

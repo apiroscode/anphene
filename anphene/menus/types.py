@@ -1,16 +1,16 @@
 import graphene
 from graphene import relay
 
-from . import models
 from core.graph.connection import CountableDjangoObjectType
-from ..pages.dataloaders import PageByIdLoader
-from ..products.dataloaders import CategoryByIdLoader, CollectionByIdLoader
+from . import models
 from .dataloaders import (
     MenuByIdLoader,
     MenuItemByIdLoader,
     MenuItemChildrenLoader,
     MenuItemsByParentMenuLoader,
 )
+from ..pages.dataloaders import PageByIdLoader
+from ..products.dataloaders import CategoryByIdLoader, CollectionByIdLoader
 
 
 class Menu(CountableDjangoObjectType):
