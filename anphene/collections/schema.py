@@ -7,6 +7,7 @@ from .mutations import (
     CollectionCreate,
     CollectionDelete,
     CollectionUpdate,
+    AssignCollectionHomepage,
 )
 from .mutations_bulk import (
     CollectionAddProducts,
@@ -47,3 +48,4 @@ class CollectionMutations(graphene.ObjectType):
     collection_bulk_publish = CollectionBulkPublish.Field()
     collection_add_products = CollectionAddProducts.Field()
     collection_remove_products = CollectionRemoveProducts.Field()
+    assign_collection_homepage = AssignCollectionHomepage.Field()

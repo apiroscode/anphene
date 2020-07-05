@@ -9,6 +9,7 @@
           <option value="anphene.collections.types.Image" />
           <option value="anphene.products.types.products.Image" />
           <option value="anphene.users.dataloaders.DataLoader" />
+          <option value="anphene.site.types.Menu" />
         </list>
       </option>
     </inspection_tool>

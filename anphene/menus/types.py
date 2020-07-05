@@ -15,6 +15,10 @@ from ..products.dataloaders import CategoryByIdLoader, CollectionByIdLoader
 
 class Menu(CountableDjangoObjectType):
     items = graphene.List(lambda: MenuItem)
+    is_main_navigation = graphene.Boolean(description="Is this menu the main navigation.")
+    is_secondary_navigation = graphene.Boolean(
+        description="Is this menu the secondary navigation."
+    )
 
     class Meta:
         description = (
@@ -28,6 +32,18 @@ class Menu(CountableDjangoObjectType):
     @staticmethod
     def resolve_items(root: models.Menu, info, **_kwargs):
         return MenuItemsByParentMenuLoader(info.context).load(root.id)
+
+    @staticmethod
+    def resolve_is_main_navigation(root: models.Menu, info, **_kwargs):
+        site_settings = info.context.site.settings
+
+        return site_settings.top_menu == root
+
+    @staticmethod
+    def resolve_is_secondary_navigation(root: models.Menu, info, **_kwargs):
+        site_settings = info.context.site.settings
+
+        return site_settings.bottom_menu == root
 
 
 class MenuItem(CountableDjangoObjectType):

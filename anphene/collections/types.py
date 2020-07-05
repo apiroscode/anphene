@@ -14,6 +14,7 @@ class Collection(CountableDjangoObjectType):
         description="List of products in this collection.",
     )
     background_image = graphene.Field(Image, size=graphene.Int(description="Size of the image."))
+    feature_on_homepage = graphene.Boolean(description="Is this collection feature on homepage.")
 
     class Meta:
         description = "Represents a collection of products."
@@ -44,6 +45,12 @@ class Collection(CountableDjangoObjectType):
     @staticmethod
     def resolve_products(root: models.Collection, info, **_kwargs):
         return root.products.collection_sorted(info.context.user)
+
+    @staticmethod
+    def resolve_feature_on_homepage(root: models.Collection, info, **_kwargs):
+        site_settings = info.context.site.settings
+
+        return site_settings.homepage_collection == root
 
     @classmethod
     def get_node(cls, info, id):

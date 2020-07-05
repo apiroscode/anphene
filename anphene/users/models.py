@@ -37,7 +37,6 @@ class AddressQueryset(models.QuerySet):
 
 
 class Address(models.Model):
-    company_name = models.CharField(max_length=256, blank=True)
     name = models.CharField(max_length=256, blank=True)
     phone = PossiblePhoneNumberField(blank=True, default="")
     street_address = models.CharField(max_length=256)
@@ -49,14 +48,8 @@ class Address(models.Model):
     class Meta:
         ordering = ["pk"]
 
-    @property
-    def full_name(self):
-        return self.name
-
     def __str__(self):
-        if self.company_name:
-            return "%s - %s" % (self.company_name, self.full_name)
-        return self.full_name
+        return self.name
 
     def __eq__(self, other):
         if not isinstance(other, Address):
@@ -65,7 +58,6 @@ class Address(models.Model):
 
     def as_data(self):
         """Return the address as a dict suitable for passing as kwargs.
-
         Result does not contain the primary key or an associated user.
         """
         data = model_to_dict(self, exclude=["id", "user"])

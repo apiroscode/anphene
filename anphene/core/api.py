@@ -8,6 +8,7 @@ from ..menus.schema import MenuMutations, MenuQueries
 from ..pages.schema import PageMutations, PageQueries
 from ..products.schema import ProductMutations, ProductQueries
 from ..regions.schema import RegionQueries
+from ..site.schema import ShopQueries, ShopMutations
 from ..suppliers.schema import SupplierMutations, SupplierQueries
 from ..users.schema import UserMutations, UserQueries
 
@@ -21,6 +22,7 @@ class Query(
     PageQueries,
     ProductQueries,
     RegionQueries,
+    ShopQueries,
     SupplierQueries,
     UserQueries,
 ):
@@ -35,6 +37,7 @@ class Mutation(
     MenuMutations,
     PageMutations,
     ProductMutations,
+    ShopMutations,
     SupplierMutations,
     UserMutations,
 ):

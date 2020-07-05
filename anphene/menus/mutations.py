@@ -266,14 +266,19 @@ class AssignNavigation(BaseMutation):
     @classmethod
     def perform_mutation(cls, _root, info, navigation_type, menu=None):
         site_settings = info.context.site.settings
-        if menu is not None:
-            menu = cls.get_node_or_error(info, menu, field="menu")
+        menu = cls.get_node_or_error(info, menu, field="menu")
 
+        prev_menu = None
         if navigation_type == NavigationType.MAIN:
+            prev_menu = site_settings.top_menu
             site_settings.top_menu = menu
             site_settings.save(update_fields=["top_menu"])
         elif navigation_type == NavigationType.SECONDARY:
+            prev_menu = site_settings.bottom_menu
             site_settings.bottom_menu = menu
             site_settings.save(update_fields=["bottom_menu"])
 
-        return AssignNavigation(menu=menu)
+        if menu is not None and prev_menu:
+            prev_menu.refresh_from_db()
+
+        return AssignNavigation(menu=menu if menu is not None else prev_menu)

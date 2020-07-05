@@ -3,6 +3,7 @@ import graphene_django_optimizer as gql_optimizer
 from django.contrib.auth import models as auth_models
 from graphene import relay
 
+from core.exceptions import PermissionDenied
 from core.graph.connection import CountableDjangoObjectType
 from core.graph.fields import FilterInputConnectionField
 from core.graph.types import Permission
@@ -10,6 +11,7 @@ from core.graph.utils import from_global_id_strict_type
 from core.utils import format_permissions_for_display
 from . import models
 from .filters import StaffUserInput
+from ..core.permissions import UserPermissions
 from ..regions.dataloader import SubDistrictByIdLoader
 
 
@@ -106,6 +108,38 @@ class User(CountableDjangoObjectType):
             return ""
 
         return info.context.build_absolute_uri(root.id_card.url)
+
+
+class StaffNotificationRecipient(CountableDjangoObjectType):
+    user = graphene.Field(
+        User, description="Returns a user subscribed to email notifications.", required=False,
+    )
+    email = graphene.String(
+        description=("Returns email address of a user subscribed to email notifications."),
+        required=False,
+    )
+    active = graphene.Boolean(description="Determines if a notification active.")
+
+    class Meta:
+        description = (
+            "Represents a recipient of email notifications send by Saleor, "
+            "such as notifications about new orders. Notifications can be "
+            "assigned to staff users or arbitrary email addresses."
+        )
+        interfaces = [relay.Node]
+        model = models.StaffNotificationRecipient
+        only_fields = ["user", "active"]
+
+    @staticmethod
+    def resolve_user(root: models.StaffNotificationRecipient, info):
+        user = info.context.user
+        if user == root.user or user.has_perm(UserPermissions.MANAGE_STAFF):
+            return root.user
+        raise PermissionDenied()
+
+    @staticmethod
+    def resolve_email(root: models.StaffNotificationRecipient, _info):
+        return root.get_email()
 
 
 class Group(CountableDjangoObjectType):

@@ -2,6 +2,7 @@ import graphene
 from django.core.exceptions import ValidationError
 
 from core.graph.mutations import (
+    BaseMutation,
     ModelDeleteMutation,
     ModelMutation,
 )
@@ -11,7 +12,8 @@ from core.utils import validate_slug_and_generate_if_needed
 from core.utils.images import validate_image_file
 from . import models
 from .thumbnails import create_collection_background_image_thumbnails
-from ..core.permissions import CollectionPermissions
+from .types import Collection
+from ..core.permissions import CollectionPermissions, SitePermissions
 
 
 class CollectionInput(graphene.InputObjectType):
@@ -83,3 +85,28 @@ class CollectionDelete(ModelDeleteMutation):
         description = "Deletes a collection."
         model = models.Collection
         permissions = (CollectionPermissions.MANAGE_COLLECTIONS,)
+
+
+class AssignCollectionHomepage(BaseMutation):
+    collection = graphene.Field(Collection, description="Updated shop.")
+
+    class Arguments:
+        collection = graphene.ID(description="Collection displayed on homepage.")
+
+    class Meta:
+        description = "Updates homepage collection of the shop."
+        permissions = (CollectionPermissions.MANAGE_COLLECTIONS, SitePermissions.MANAGE_SETTINGS)
+
+    @classmethod
+    def perform_mutation(cls, _root, info, collection=None):
+        collection = cls.get_node_or_error(info, collection, only_type=Collection)
+        site_settings = info.context.site.settings
+        prev_collection = site_settings.homepage_collection
+        site_settings.homepage_collection = collection
+        cls.clean_instance(info, site_settings)
+        site_settings.save(update_fields=["homepage_collection"])
+
+        if collection is not None and prev_collection:
+            prev_collection.refresh_from_db()
+
+        return cls(collection=collection if collection is not None else prev_collection)
