@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 from core.graph.mutations import BaseMutation, validation_error_to_error_type
 from core.graph.types import Error
 from core.utils.urls import validate_storefront_url
-from .. import models
+from .. import events as account_events, models
 from ..emails import send_user_password_reset_email_with_url
 from ..types import User
 
@@ -100,6 +100,7 @@ class SetPassword(BaseMutation):
             raise ValidationError({"password": error})
         user.set_password(password)
         user.save(update_fields=["password"])
+        account_events.customer_password_reset_event(user=user)
         return user
 
 
@@ -170,4 +171,5 @@ class PasswordChange(BaseMutation):
         user.set_password(new_password)
         user.save(update_fields=["password"])
         update_session_auth_hash(info.context, user)
+        account_events.customer_password_changed_event(user=user)
         return cls(user=user)

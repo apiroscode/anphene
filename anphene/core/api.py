@@ -8,7 +8,7 @@ from ..menus.schema import MenuMutations, MenuQueries
 from ..pages.schema import PageMutations, PageQueries
 from ..products.schema import ProductMutations, ProductQueries
 from ..regions.schema import RegionQueries
-from ..site.schema import ShopQueries, ShopMutations
+from ..site.schema import ShopMutations, ShopQueries
 from ..suppliers.schema import SupplierMutations, SupplierQueries
 from ..users.schema import UserMutations, UserQueries
 

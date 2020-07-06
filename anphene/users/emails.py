@@ -55,3 +55,28 @@ def _send_set_password_email(recipient_email, password_set_url, template_name):
     send_templated_mail(
         template_name=template_name, recipient_list=[recipient_email], context=ctx, **send_kwargs
     )
+
+
+# ACCOUNT DELETE CONFIRMATION EMAIL
+def send_account_delete_confirmation_email_with_url(redirect_url, user):
+    """Trigger sending a account delete email for the given user."""
+    token = default_token_generator.make_token(user)
+    _send_account_delete_confirmation_email_with_url.delay(user.email, redirect_url, token)
+
+
+@app.task
+def _send_account_delete_confirmation_email_with_url(recipient_email, redirect_url, token):
+    params = urlencode({"token": token})
+    delete_url = prepare_url(params, redirect_url)
+    _send_delete_confirmation_email(recipient_email, delete_url)
+
+
+def _send_delete_confirmation_email(recipient_email, delete_url):
+    send_kwargs, ctx = get_email_context()
+    ctx["delete_url"] = delete_url
+    send_templated_mail(
+        template_name="users/account_delete",
+        recipient_list=[recipient_email],
+        context=ctx,
+        **send_kwargs,
+    )

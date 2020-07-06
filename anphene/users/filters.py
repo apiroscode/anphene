@@ -22,7 +22,7 @@ def filter_status(qs, _, value):
 
 class CustomerFilter(django_filters.FilterSet):
     date_joined = ObjectTypeFilter(input_class=DateRangeInput, method=filter_date_joined)
-    search = django_filters.CharFilter(method=filter_fields_containing_value("name"))
+    search = django_filters.CharFilter(method=filter_fields_containing_value("name", "email"))
 
     class Meta:
         model = User

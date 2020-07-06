@@ -5,7 +5,16 @@ from core.graph.fields import FilterInputConnectionField
 from core.graph.types import Permission
 from .filters import CustomerFilterInput, GroupFilterInput, StaffUserInput
 from .mutations.auth import Login, Logout, PasswordChange, RequestPasswordReset, SetPassword
-from .mutations.group import (
+from .mutations.customers import (
+    AddressCreate,
+    AddressDelete,
+    AddressSetDefault,
+    AddressUpdate,
+    CustomerCreate,
+    CustomerDelete,
+    CustomerUpdate,
+)
+from .mutations.groups import (
     GroupBulkDelete,
     GroupCreate,
     GroupDelete,
@@ -14,12 +23,12 @@ from .mutations.group import (
     GroupUpdate,
 )
 from .mutations.staff import (
-    StaffBulkActivate,
-    StaffBulkDelete,
     StaffCreate,
     StaffDelete,
     StaffUpdate,
 )
+from .mutations_bulk.customers import CustomerBulkDelete
+from .mutations_bulk.staff import StaffBulkActivate, StaffBulkDelete
 from .resolvers import (
     resolve_address,
     resolve_all_permissions,
@@ -124,3 +133,13 @@ class UserMutations(graphene.ObjectType):
     staff_delete = StaffDelete.Field()
     staff_bulk_activate = StaffBulkActivate.Field()
     staff_bulk_delete = StaffBulkDelete.Field()
+
+    # Customers Mutations
+    customer_create = CustomerCreate.Field()
+    customer_update = CustomerUpdate.Field()
+    customer_delete = CustomerDelete.Field()
+    customer_bulk_delete = CustomerBulkDelete.Field()
+    address_create = AddressCreate.Field()
+    address_update = AddressUpdate.Field()
+    address_delete = AddressDelete.Field()
+    address_set_default = AddressSetDefault.Field()

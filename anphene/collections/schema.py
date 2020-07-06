@@ -4,10 +4,10 @@ from core.graph.fields import FilterInputConnectionField
 from core.graph.utils import get_node_or_slug
 from .filters import CollectionFilterInput
 from .mutations import (
+    AssignCollectionHomepage,
     CollectionCreate,
     CollectionDelete,
     CollectionUpdate,
-    AssignCollectionHomepage,
 )
 from .mutations_bulk import (
     CollectionAddProducts,

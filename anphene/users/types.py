@@ -15,6 +15,14 @@ from ..core.permissions import UserPermissions
 from ..regions.dataloader import SubDistrictByIdLoader
 
 
+class AddressInput(graphene.InputObjectType):
+    sub_district = graphene.ID(description="District id.", required=True)
+    name = graphene.String(description="Company or organization.", required=True)
+    phone = graphene.String(description="Phone number.", required=True)
+    street_address = graphene.String(description="Address.", required=True)
+    postal_code = graphene.String(description="Postal code.")
+
+
 class Address(CountableDjangoObjectType):
     is_default_shipping_address = graphene.Boolean(
         required=False, description="Address is user's default shipping address."
@@ -89,7 +97,7 @@ class User(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_addresses(root: models.User, _info, **_kwargs):
-        return root.addresses.annotate_default(root).all()
+        return root.addresses.select_related("sub_district__city__province")
 
     @staticmethod
     def resolve_user_permissions(root: models.User, _info, **_kwargs):
@@ -115,7 +123,7 @@ class StaffNotificationRecipient(CountableDjangoObjectType):
         User, description="Returns a user subscribed to email notifications.", required=False,
     )
     email = graphene.String(
-        description=("Returns email address of a user subscribed to email notifications."),
+        description="Returns email address of a user subscribed to email notifications.",
         required=False,
     )
     active = graphene.Boolean(description="Determines if a notification active.")

@@ -3,8 +3,6 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from core.graph.mutations import (
-    BaseBulkMutation,
-    ModelBulkDeleteMutation,
     ModelDeleteMutation,
     ModelMutation,
 )
@@ -106,32 +104,5 @@ class StaffDelete(ModelDeleteMutation):
 
     class Meta:
         description = "Deletes a staff user."
-        model = models.User
-        permissions = (UserPermissions.MANAGE_STAFF,)
-
-
-class StaffBulkActivate(BaseBulkMutation):
-    class Arguments:
-        ids = graphene.List(graphene.ID, required=True, description="List of staff IDs to delete.")
-        is_active = graphene.Boolean(
-            required=True, description="Determine if staff will be active or not.",
-        )
-
-    class Meta:
-        description = "Activate staff."
-        model = models.User
-        permissions = (UserPermissions.MANAGE_STAFF,)
-
-    @classmethod
-    def bulk_action(cls, queryset, is_active):
-        queryset.update(is_active=is_active)
-
-
-class StaffBulkDelete(ModelBulkDeleteMutation):
-    class Arguments:
-        ids = graphene.List(graphene.ID, required=True, description="List of staff IDs to delete.")
-
-    class Meta:
-        description = "Deletes staff."
         model = models.User
         permissions = (UserPermissions.MANAGE_STAFF,)

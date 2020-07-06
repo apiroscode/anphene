@@ -272,6 +272,9 @@ GRAPHENE = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL = env.bool(
+    "ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL", default=False
+)
 APP_NAME = env("APP_NAME", default="")
 
 SEARCH_BACKEND = "anphene.search.backends.postgresql"

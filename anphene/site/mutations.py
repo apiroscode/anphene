@@ -7,14 +7,8 @@ from . import models as site_models
 from .types import AuthorizationKey, AuthorizationKeyType, Shop
 from ..core.permissions import SitePermissions
 from ..users import models as users_models
-
-
-class ShopAddressInput(graphene.InputObjectType):
-    name = graphene.String(description="Company or organization.")
-    phone = graphene.String(description="Phone number.")
-    street_address = graphene.String(description="Address.")
-    postal_code = graphene.String(description="Postal code.")
-    sub_district = graphene.ID(description="District id.")
+from ..users.types import AddressInput
+from ..utils.address import AddressValidation
 
 
 class ShopSettingsInput(graphene.InputObjectType):
@@ -73,11 +67,11 @@ class ShopSettingsUpdate(BaseMutation):
         return ShopSettingsUpdate(shop=Shop())
 
 
-class ShopAddressUpdate(BaseMutation):
+class ShopAddressUpdate(BaseMutation, AddressValidation):
     shop = graphene.Field(Shop, description="Updated shop.")
 
     class Arguments:
-        input = ShopAddressInput(description="Fields required to update shop address.")
+        input = AddressInput(description="Fields required to update shop address.")
 
     class Meta:
         description = (
@@ -91,13 +85,8 @@ class ShopAddressUpdate(BaseMutation):
         site_settings = info.context.site.settings
         data = data.get("input")
         if data:
-            if not site_settings.company_address:
-                company_address = users_models.Address()
-            else:
-                company_address = site_settings.company_address
-            data["sub_district"] = cls.get_node_or_error(info, data["sub_district"])
-            company_address = cls.construct_instance(company_address, data)
-            cls.clean_instance(info, company_address)
+            company_address = site_settings.company_address
+            company_address = cls.validate_address(info, data, company_address)
             company_address.save()
             site_settings.company_address = company_address
             site_settings.save(update_fields=["company_address"])

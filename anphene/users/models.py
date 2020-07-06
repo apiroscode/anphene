@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CIEmailField, JSONField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import CharField, Q, Value
+from django.db.models import CharField, Value
 from django.forms.models import model_to_dict
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -37,11 +37,11 @@ class AddressQueryset(models.QuerySet):
 
 
 class Address(models.Model):
-    name = models.CharField(max_length=256, blank=True)
-    phone = PossiblePhoneNumberField(blank=True, default="")
-    street_address = models.CharField(max_length=256)
-    postal_code = models.CharField(max_length=20)
     sub_district = models.ForeignKey(SubDistrict, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
+    phone = PossiblePhoneNumberField()
+    street_address = models.CharField(max_length=256)
+    postal_code = models.CharField(max_length=20, blank=True)
 
     objects = AddressQueryset.as_manager()
 
@@ -51,11 +51,6 @@ class Address(models.Model):
     def __str__(self):
         return self.name
 
-    def __eq__(self, other):
-        if not isinstance(other, Address):
-            return False
-        return self.as_data() == other.as_data()
-
     def as_data(self):
         """Return the address as a dict suitable for passing as kwargs.
         Result does not contain the primary key or an associated user.
@@ -64,10 +59,6 @@ class Address(models.Model):
         if isinstance(data["phone"], PhoneNumber):
             data["phone"] = data["phone"].as_e164
         return data
-
-    def get_copy(self):
-        """Return a new instance of the same address."""
-        return Address.objects.create(**self.as_data())
 
 
 class UserManager(BaseUserManager):
@@ -87,9 +78,11 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, is_staff=True, is_superuser=True, **extra_fields)
 
     def customers(self):
-        return self.get_queryset().filter(
-            Q(is_staff=False) | (Q(is_staff=True) & Q(orders__isnull=False))
-        )
+        # TODO: AFTER ORDERS FINISH
+        # return self.get_queryset().filter(
+        #     Q(is_staff=False) | (Q(is_staff=True) & Q(orders__isnull=False))
+        # )
+        return self.get_queryset().filter(is_staff=False, is_superuser=False)
 
     def staff(self):
         return self.get_queryset().filter(is_staff=True, is_superuser=False)
@@ -138,6 +131,8 @@ class User(AbstractUser):
         return super().save(*args, **kwargs)
 
     def get_full_name(self):
+        if self.name:
+            return self.name
         return self.email
 
     def get_short_name(self):
