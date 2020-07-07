@@ -45,7 +45,6 @@ def send_set_password_email_with_url(redirect_url, user, staff=False):
 def _send_set_user_password_email_with_url(recipient_email, redirect_url, token, template_name):
     params = urlencode({"email": recipient_email, "token": token})
     password_set_url = prepare_url(params, redirect_url)
-    print(password_set_url)
     _send_set_password_email(recipient_email, password_set_url, template_name)
 
 

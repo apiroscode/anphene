@@ -26,7 +26,7 @@ def can_edit_address(user, address):
     )
 
 
-class BaseAddressUpdate(ModelMutation, AddressValidation):
+class BaseAddressUpdate(ModelMutation):
     """Base mutation for address update used by staff and account."""
 
     user = graphene.Field(User, description="A user object for which the address was edited.")
@@ -47,14 +47,9 @@ class BaseAddressUpdate(ModelMutation, AddressValidation):
         return super().clean_input(info, instance, data)
 
     @classmethod
-    def perform_mutation(cls, root, info, **data):
-        instance = cls.get_instance(info, **data)
-        cleaned_input = cls.clean_input(info=info, instance=instance, data=data.get("input"))
-        address = cls.validate_address(info, data, instance)
+    def success_response(cls, address):
+        success_response = super().success_response(address)
         user = address.user_addresses.first()
-        cls.save(info, address, cleaned_input)
-        cls._save_m2m(info, address, cleaned_input)
-        success_response = cls.success_response(address)
         success_response.user = user
         success_response.address = address
         return success_response
@@ -108,6 +103,7 @@ class BaseAddressDelete(ModelDeleteMutation):
         response = cls.success_response(instance)
         if not user.default_shipping_address and user.addresses.first():
             user.default_shipping_address = user.addresses.first()
+            user.save()
         response.user = user
         return response
 
