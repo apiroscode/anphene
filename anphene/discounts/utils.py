@@ -7,7 +7,7 @@ from . import DiscountInfo
 from .models import NotApplicable, Sale, VoucherCustomer
 
 
-# from ..checkout import calculations
+# from ..checkouts import calculations
 
 
 def increase_voucher_usage(voucher):
@@ -97,16 +97,16 @@ def calculate_discounted_price(product, price, collections, discounts):
 #
 # def validate_voucher_for_checkout(
 #     voucher: "Voucher",
-#     checkout: "Checkout",
+#     checkouts: "Checkout",
 #     lines: Iterable["CheckoutLine"],
 #     discounts: Optional[Iterable[DiscountInfo]],
 # ):
 #     subtotal = calculations.checkout_subtotal(
-#         checkout=checkout, lines=lines, discounts=discounts
+#         checkouts=checkouts, lines=lines, discounts=discounts
 #     )
 #
-#     customer_email = checkout.get_customer_email()
-#     validate_voucher(voucher, subtotal.gross, checkout.quantity, customer_email)
+#     customer_email = checkouts.get_customer_email()
+#     validate_voucher(voucher, subtotal.gross, checkouts.quantity, customer_email)
 #
 #
 # def validate_voucher_in_order(order: "Order"):

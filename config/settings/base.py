@@ -71,10 +71,12 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "anphene.attributes.apps.AttributesConfig",
     "anphene.categories.apps.CategoriesConfig",
+    "anphene.checkouts.apps.CheckoutsConfig",
     "anphene.collections.apps.CollectionsConfig",
     "anphene.discounts.apps.DiscountsConfig",
     "anphene.menus.apps.MenusConfig",
     "anphene.pages.apps.PagesConfig",
+    "anphene.plugins.apps.PluginsConfig",
     "anphene.products.apps.ProductsConfig",
     "anphene.regions.apps.RegionsConfig",
     "anphene.suppliers.apps.SuppliersConfig",
@@ -312,3 +314,9 @@ CORS_ALLOW_METHODS = [
 
 ENABLE_SSL = env.bool("ENABLE_SSL", default=False)
 MAX_CHECKOUT_LINE_QUANTITY = 50
+
+# PLUGINS
+PLUGINS_MANAGER = "anphene.plugins.manager.PluginsManager"
+PLUGINS = [
+    "anphene.shipping.gateways.raja_ongkir.plugin.RajaOngkirPlugin",
+]

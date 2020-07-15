@@ -54,7 +54,7 @@ class Attribute(models.Model):
 class AttributeValue(SortableModel):
     attribute = models.ForeignKey(Attribute, related_name="values", on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
-    value = models.CharField(max_length=100, blank=True, default="")
+    value = models.CharField(max_length=100, blank=True)
     slug = models.SlugField(max_length=255)
 
     class Meta:

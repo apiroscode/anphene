@@ -1,8 +1,11 @@
 import os
 
 from celery import Celery
+from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
+from anphene.plugins import discover_plugins_modules
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
 app = Celery("anphene")
@@ -15,3 +18,4 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+app.autodiscover_tasks(lambda: discover_plugins_modules(settings.PLUGINS))

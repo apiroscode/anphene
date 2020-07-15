@@ -21,7 +21,7 @@ def resolve_product_variants(info, ids=None):
     ).values_list("pk", flat=True)
     qs = models.ProductVariant.objects.filter(product__id__in=visible_products)
     if ids:
-        db_ids = [get_database_id(info, node_id, "ProductVariant") for node_id in ids]
+        db_ids = [get_database_id(node_id, "ProductVariant") for node_id in ids]
         qs = qs.filter(pk__in=db_ids)
     return qs
 

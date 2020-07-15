@@ -38,7 +38,7 @@ class VoucherInput(graphene.InputObjectType):
         description="Min purchase amount required to apply the voucher."
     )
     min_checkout_items_quantity = graphene.Int(
-        description="Minimal quantity of checkout items required to apply the voucher."
+        description="Minimal quantity of checkouts items required to apply the voucher."
     )
 
     products = graphene.List(

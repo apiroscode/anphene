@@ -82,7 +82,7 @@ class Voucher(CountableDjangoObjectType):
     class Meta:
         description = (
             "Vouchers allow giving discounts to particular customers on categories, "
-            "collections or specific products. They can be used during checkout by "
+            "collections or specific products. They can be used during checkouts by "
             "providing valid voucher codes."
         )
         only_fields = [

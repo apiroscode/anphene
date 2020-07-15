@@ -84,7 +84,6 @@ class Reordering:
         return node_pos, target_pos, target_position
 
     def process_move_operation(self, pk, move):
-        print(pk, move)
         old_sort_order = self.ordered_node_map[pk]
 
         # Skip if noting to do

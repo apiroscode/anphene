@@ -17,7 +17,7 @@ def get_discount(discount_type, value, price):
 
 
 class NotApplicable(ValueError):
-    """Exception raised when a discount is not applicable to a checkout.
+    """Exception raised when a discount is not applicable to a checkouts.
 
     The error is raised if the order value is below the minimum required
     price or the order quantity is below the minimum quantity of items.

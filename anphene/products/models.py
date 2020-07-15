@@ -113,6 +113,10 @@ class ProductVariant(models.Model):
         return self.sku
 
     @property
+    def quantity_available(self):
+        return max(self.quantity - self.quantity_allocated, 0)
+
+    @property
     def is_visible(self) -> bool:
         return self.product.is_visible
 

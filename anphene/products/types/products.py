@@ -168,8 +168,8 @@ class Product(CountableDjangoObjectType):
         return SelectedAttributesByProductIdLoader(info.context).load(root.id)
 
     @staticmethod
-    def resolve_image_by_id(root: models.Product, info, id):
-        pk = get_database_id(info, id, ProductImage)
+    def resolve_image_by_id(root: models.Product, _info, id):
+        pk = get_database_id(id, ProductImage)
         try:
             return root.images.get(pk=pk)
         except models.ProductImage.DoesNotExist:

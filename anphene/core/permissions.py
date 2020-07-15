@@ -37,6 +37,10 @@ class PagePermissions(BasePermissionEnum):
     MANAGE_PAGES = "pages.manage_pages"
 
 
+class PluginsPermissions(BasePermissionEnum):
+    MANAGE_PLUGINS = "plugins.manage_plugins"
+
+
 class ProductPermissions(BasePermissionEnum):
     MANAGE_PRODUCTS = "products.manage_products"
     MANAGE_PRODUCT_TYPES = "products.manage_product_types"
@@ -63,6 +67,7 @@ PERMISSIONS_ENUMS = [
     GroupPermissions,
     MenuPermissions,
     PagePermissions,
+    PluginsPermissions,
     ProductPermissions,
     SitePermissions,
     SupplierPermissions,

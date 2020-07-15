@@ -55,7 +55,7 @@ def snake_to_camel_case(name):
     return name
 
 
-def get_database_id(info, node_id, only_type):
+def get_database_id(node_id, only_type=None):
     """Get a database ID from a node ID of given type."""
     _type, _id = graphene.relay.Node.from_global_id(node_id)
     if _type != str(only_type):

@@ -6,8 +6,10 @@ from ..collections.schema import CollectionMutations, CollectionQueries
 from ..discounts.schema import DiscountMutations, DiscountQueries
 from ..menus.schema import MenuMutations, MenuQueries
 from ..pages.schema import PageMutations, PageQueries
+from ..plugins.schema import PluginsMutations, PluginsQueries
 from ..products.schema import ProductMutations, ProductQueries
 from ..regions.schema import RegionQueries
+from ..shipping.schema import ShippingMutations
 from ..site.schema import ShopMutations, ShopQueries
 from ..suppliers.schema import SupplierMutations, SupplierQueries
 from ..users.schema import UserMutations, UserQueries
@@ -20,6 +22,7 @@ class Query(
     DiscountQueries,
     MenuQueries,
     PageQueries,
+    PluginsQueries,
     ProductQueries,
     RegionQueries,
     ShopQueries,
@@ -36,7 +39,9 @@ class Mutation(
     DiscountMutations,
     MenuMutations,
     PageMutations,
+    PluginsMutations,
     ProductMutations,
+    ShippingMutations,
     ShopMutations,
     SupplierMutations,
     UserMutations,
