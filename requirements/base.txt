@@ -13,7 +13,7 @@ whitenoise==5.0.1  # https://github.com/evansd/whitenoise
 
 # Django
 # ------------------------------------------------------------------------------
-django==3.0.6
+django==3.0.14
 django-cleanup==4.0.0
 django-cors-headers==3.2.1
 django-environ==0.4.5
